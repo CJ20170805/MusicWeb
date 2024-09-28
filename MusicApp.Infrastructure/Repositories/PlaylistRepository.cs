@@ -30,7 +30,7 @@ namespace MusicApp.Infrastructure.Repositories
         public async Task<IEnumerable<Playlist>> GetAllPlaylistsAsync(Guid userId)
         {
             return await _context.Playlists
-                .Where(p => p.Id == userId)
+                .Where(p => p.UserId == userId)
                 .ToListAsync();
         }
 

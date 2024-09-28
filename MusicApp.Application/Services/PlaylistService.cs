@@ -20,6 +20,10 @@ namespace MusicApp.Application.Services
         public async Task<PlaylistDTO> GetPlaylistByIdAsync(Guid playlistId)
         {
             var playlist = await _playlistRepository.GetPlaylistByIdAsync(playlistId);
+            if (playlist == null)
+            {
+                throw new KeyNotFoundException($"Playlist with ID {playlistId} not found.");
+            }
             return _mapper.Map<PlaylistDTO>(playlist);
         }
 
@@ -31,6 +35,11 @@ namespace MusicApp.Application.Services
 
         public async Task<Guid> CreatePlaylistAsync(PlaylistDTO playlistDTO)
         {
+            if (playlistDTO == null)
+            {
+                throw new ArgumentNullException(nameof(playlistDTO), "Playlist DTO cannot be null.");
+            }
+
             var playlist = _mapper.Map<Playlist>(playlistDTO);
             await _playlistRepository.AddPlaylistAsync(playlist);
             return playlist.Id;
@@ -38,6 +47,17 @@ namespace MusicApp.Application.Services
 
         public async Task<bool> UpdatePlaylistAsync(PlaylistDTO playlistDTO)
         {
+            if (playlistDTO == null)
+            {
+                throw new ArgumentNullException(nameof(playlistDTO), "Playlist DTO cannot be null.");
+            }
+
+            var existingPlaylist = await _playlistRepository.GetPlaylistByIdAsync(playlistDTO.Id);
+            if (existingPlaylist == null)
+            {
+                throw new KeyNotFoundException($"Playlist with ID {playlistDTO.Id} not found.");
+            }
+
             var playlist = _mapper.Map<Playlist>(playlistDTO);
             await _playlistRepository.UpdatePlaylistAsync(playlist);
             return true;
@@ -45,6 +65,12 @@ namespace MusicApp.Application.Services
 
         public async Task<bool> DeletePlaylistAsync(Guid playlistId)
         {
+            var existingPlaylist = await _playlistRepository.GetPlaylistByIdAsync(playlistId);
+            if (existingPlaylist == null)
+            {
+                throw new KeyNotFoundException($"Playlist with ID {playlistId} not found.");
+            }
+
             await _playlistRepository.DeletePlaylistAsync(playlistId);
             return true;
         }

@@ -11,6 +11,7 @@ using MusicApp.Application.Services;
 using MusicApp.Infrastructure.Repositories;
 using MusicApp.Domain.Interfaces;
 using System.Security.Cryptography;
+using MusicApp.Application.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,11 +22,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // AutoMapper setup
-builder.Services.AddAutoMapper(typeof(Program));
+// builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
+
 
 // DI for Playlist and Track services
-// builder.Services.AddScoped<IPlaylistService, PlaylistService>();
-// builder.Services.AddScoped<ITrackService, TrackService>();
+builder.Services.AddScoped<IPlaylistService, PlaylistService>();
+builder.Services.AddScoped<ITrackService, TrackService>();
 
 // DI for Playlist and Track repositories
 builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
