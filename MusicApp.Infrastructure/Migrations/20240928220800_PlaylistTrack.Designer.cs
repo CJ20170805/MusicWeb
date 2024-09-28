@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MusicApp.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using MusicApp.Infrastructure.Data;
 namespace MusicApp.Infrastructure.Migrations
 {
     [DbContext(typeof(MusicDbContext))]
-    partial class MusicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240928220800_PlaylistTrack")]
+    partial class PlaylistTrack
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -378,9 +381,11 @@ namespace MusicApp.Infrastructure.Migrations
 
             modelBuilder.Entity("MusicApp.Domain.Entities.Track", b =>
                 {
-                    b.HasOne("MusicApp.Domain.Entities.Playlist", null)
+                    b.HasOne("MusicApp.Domain.Entities.Playlist", "Playlist")
                         .WithMany("Tracks")
                         .HasForeignKey("PlaylistId");
+
+                    b.Navigation("Playlist");
                 });
 
             modelBuilder.Entity("MusicApp.Domain.Entities.Playlist", b =>

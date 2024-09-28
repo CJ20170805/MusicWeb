@@ -8,8 +8,8 @@ public class Track
     public string? Title { get; private set; }
     public string? Artist { get; private set; }
     public TimeSpan Duration { get; private set; }
-    public Guid? PlaylistId { get; private set; }
-    public Playlist? Playlist { get; private set; }
+    // public Guid? PlaylistId { get; private set; }
+    // public Playlist? Playlist { get; private set; }
 
     public ICollection<PlaylistTrack> PlaylistTracks { get; private set; }
 

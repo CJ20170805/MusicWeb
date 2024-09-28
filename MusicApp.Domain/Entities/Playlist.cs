@@ -27,14 +27,33 @@ public class Playlist
 
     public void AddTrack(Track track)
     {
-        Tracks?.Add(track);
-        UpdatedAt = DateTime.UtcNow;
+        if(PlaylistTracks == null)
+        {
+            PlaylistTracks = new List<PlaylistTrack>();
+        }
+
+        if(!PlaylistTracks.Any(pt => pt.TrackId == track.Id))
+        {
+            PlaylistTracks.Add(new PlaylistTrack
+            {
+                PlaylistId = Id,
+                TrackId = track.Id,
+                Playlist = this,
+                Track = track
+            });
+
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 
     public void RemoveTrack(Track track)
     {
-        Tracks?.Remove(track);
-        UpdatedAt = DateTime.UtcNow;
+        var playlistTrack = PlaylistTracks.FirstOrDefault(pt => pt.TrackId == track.Id);
+        if (playlistTrack != null)
+        {
+            PlaylistTracks.Remove(playlistTrack);
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 
     public void UpdateTitle(string newTitle)

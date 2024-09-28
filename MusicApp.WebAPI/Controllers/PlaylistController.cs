@@ -11,20 +11,65 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MusicApp.WebAPI.Controllers
 {
-    [Authorize]
+    // [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PlaylistController : ControllerBase
     {
         private readonly IPlaylistService _playlistService;
+        private readonly ITrackService _trackService;
         private readonly UserManager<User> _userManager;
         private readonly IMapper _mapper;
 
-        public PlaylistController(IPlaylistService playlistService, IMapper mapper, UserManager<User> userManager)
+        public PlaylistController(IPlaylistService playlistService, ITrackService trackService, IMapper mapper, UserManager<User> userManager)
         {
             _playlistService = playlistService;
+            _trackService = trackService;
             _mapper = mapper;
             _userManager = userManager;
+        }
+
+        [HttpPost("{playlistId}/add-track/{trackId}")]
+        public async Task<IActionResult> AddTrackToPlaylist(Guid playlistId, Guid trackId)
+        {
+            // Fetch the playlist and track using services
+            var playlistDTO = await _playlistService.GetPlaylistByIdAsync(playlistId);
+            if (playlistDTO == null)
+            {
+                return NotFound("Playlist not found");
+            }
+
+            var trackDTO = await _trackService.GetTrackByIdAsync(trackId);
+            if (trackDTO == null)
+            {
+                return NotFound("Track not found");
+            }
+
+            // Add the track to the playlist
+            await _playlistService.AddTrackToPlaylistAsync(playlistId, trackId);
+            return Ok("Add Succeed");
+        }
+
+        [HttpDelete("{playlistId}/remove-track/{trackId}")]
+        public async Task<IActionResult> RemoveTrackFromPlaylist(Guid playlistId, Guid trackId)
+        {
+            // Fetch the playlist and track using services
+            var playlistDTO = await _playlistService.GetPlaylistByIdAsync(playlistId);
+            if (playlistDTO == null)
+            {
+                return NotFound("Playlist not found");
+            }
+
+            var trackDTO = await _trackService.GetTrackByIdAsync(trackId);
+            if (trackDTO == null)
+            {
+                return NotFound("Track not found");
+            }
+
+            // Remove the track from the playlist
+            await _playlistService.RemoveTrackFromPlaylistAsync(playlistId, trackId);
+
+            return NoContent(); // 204 No Content on success
         }
 
        //Get: api/playlist/{userId}

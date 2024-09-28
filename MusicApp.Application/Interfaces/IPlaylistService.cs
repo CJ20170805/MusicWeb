@@ -10,4 +10,6 @@ public interface IPlaylistService
     Task<Guid> CreatePlaylistAsync(PlaylistDTO playlistDTO);
     Task<bool> UpdatePlaylistAsync(PlaylistDTO playlistDTO);
     Task<bool> DeletePlaylistAsync(Guid playlistId);
+    Task AddTrackToPlaylistAsync(Guid playlistId, Guid trackId);
+    Task RemoveTrackFromPlaylistAsync(Guid playlistId, Guid trackId);
 }

@@ -9,12 +9,39 @@ namespace MusicApp.Application.Services
     public class PlaylistService : IPlaylistService
     {
         private readonly IPlaylistRepository _playlistRepository;
+        private readonly ITrackRepository _trackRepository;
         private readonly IMapper _mapper;
 
-        public PlaylistService(IPlaylistRepository playlistRepository, IMapper mapper)
+        public PlaylistService(IPlaylistRepository playlistRepository, ITrackRepository trackRepository, IMapper mapper)
         {
             _playlistRepository = playlistRepository;
+            _trackRepository = trackRepository;
+            
             _mapper = mapper;
+        }
+
+         public async Task AddTrackToPlaylistAsync(Guid playlistId, Guid trackId)
+        {
+            var playlist = await _playlistRepository.GetPlaylistByIdAsync(playlistId);
+            var track = await _trackRepository.GetTrackByIdAsync(trackId);
+
+            if (playlist != null && track != null)
+            {
+                playlist.AddTrack(track);
+                await _playlistRepository.UpdatePlaylistAsync(playlist); // Save changes to the playlist
+            }
+        }
+
+        public async Task RemoveTrackFromPlaylistAsync(Guid playlistId, Guid trackId)
+        {
+            var playlist = await _playlistRepository.GetPlaylistByIdAsync(playlistId);
+            var track = await _trackRepository.GetTrackByIdAsync(trackId);
+
+            if (playlist != null && track != null)
+            {
+                playlist.RemoveTrack(track);
+                await _playlistRepository.UpdatePlaylistAsync(playlist); // Save changes to the playlist
+            }
         }
 
         public async Task<PlaylistDTO> GetPlaylistByIdAsync(Guid playlistId)
