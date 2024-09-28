@@ -1,0 +1,59 @@
+using Microsoft.EntityFrameworkCore;
+using MusicApp.Domain.Entities;
+using MusicApp.Domain.Interfaces;
+using MusicApp.Infrastructure.Data;
+
+namespace MusicApp.Infrastructure.Repositories
+{
+    public class PlaylistRepository : IPlaylistRepository
+    {
+        private readonly MusicDbContext _context;
+
+        public PlaylistRepository(MusicDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<Playlist> GetPlaylistByIdAsync(Guid playlistId)
+        {
+            var playlist =  await _context.Playlists
+                .Include(p => p.Tracks)  // Include tracks if necessary
+                .FirstOrDefaultAsync(p => p.Id == playlistId);
+            
+            if(playlist == null)
+            {
+                throw new Exception("Playlist not found");
+            }
+            return playlist;
+        }
+
+        public async Task<IEnumerable<Playlist>> GetAllPlaylistsAsync(Guid userId)
+        {
+            return await _context.Playlists
+                .Where(p => p.Id == userId)
+                .ToListAsync();
+        }
+
+        public async Task AddPlaylistAsync(Playlist playlist)
+        {
+            await _context.Playlists.AddAsync(playlist);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdatePlaylistAsync(Playlist playlist)
+        {
+            _context.Playlists.Update(playlist);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeletePlaylistAsync(Guid playlistId)
+        {
+            var playlist = await GetPlaylistByIdAsync(playlistId);
+            if (playlist != null)
+            {
+                _context.Playlists.Remove(playlist);
+                await _context.SaveChangesAsync();
+            }
+        }
+    }
+}

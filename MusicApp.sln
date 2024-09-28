@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicApp.WebAPI", "MusicApp.WebAPI\MusicApp.WebAPI.csproj", "{2155CB3D-F16D-4E84-ACEF-EFA639DB2BAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicApp.Domain", "MusicApp.Domain\MusicApp.Domain.csproj", "{4DC8D030-BB88-469F-AB9F-7E5D754FFCFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicApp.Application", "MusicApp.Application\MusicApp.Application.csproj", "{E5F238DE-39DB-41D1-AAE8-E619619C95B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicApp.Infrastructure", "MusicApp.Infrastructure\MusicApp.Infrastructure.csproj", "{AC36A6D4-7C86-4CBE-ABCD-F4A9F1913DB2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2155CB3D-F16D-4E84-ACEF-EFA639DB2BAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2155CB3D-F16D-4E84-ACEF-EFA639DB2BAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2155CB3D-F16D-4E84-ACEF-EFA639DB2BAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2155CB3D-F16D-4E84-ACEF-EFA639DB2BAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DC8D030-BB88-469F-AB9F-7E5D754FFCFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DC8D030-BB88-469F-AB9F-7E5D754FFCFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DC8D030-BB88-469F-AB9F-7E5D754FFCFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DC8D030-BB88-469F-AB9F-7E5D754FFCFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5F238DE-39DB-41D1-AAE8-E619619C95B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5F238DE-39DB-41D1-AAE8-E619619C95B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5F238DE-39DB-41D1-AAE8-E619619C95B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5F238DE-39DB-41D1-AAE8-E619619C95B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC36A6D4-7C86-4CBE-ABCD-F4A9F1913DB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC36A6D4-7C86-4CBE-ABCD-F4A9F1913DB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC36A6D4-7C86-4CBE-ABCD-F4A9F1913DB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC36A6D4-7C86-4CBE-ABCD-F4A9F1913DB2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4F65D486-3678-418E-AC9C-33979DC6F268}
+	EndGlobalSection
+EndGlobal
