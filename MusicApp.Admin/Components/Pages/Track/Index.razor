@@ -1,0 +1,93 @@
+﻿@page "/tracks"
+@rendermode InteractiveServer
+@inject ITrackService TrackService
+
+<PageTitle>Track</PageTitle>
+
+<h3>Track Management</h3>
+
+@if (tracks == null)
+{
+    <p class="text-muted">Loading...</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Artist</th>
+                    @* <th>Album</th> *@
+                    <th>Duration</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var track in tracks)
+                {
+                    <tr>
+                        <td>@track.Title</td>
+                        <td>@track.Artist</td>
+                        @* <td>@track.Album</td> *@
+                        <td>@track.Duration</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" @onclick="() => EditTrack(track)">Edit</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteTrack(track.Id)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <button class="btn btn-success" @onclick="ShowCreateTrackDialog">Add New Track</button>
+
+    @if (showDialog)
+    {
+        <TrackDialog
+           Track="@trackToEdit" 
+           OnTrackSaved="LoadTracks" 
+           OnDialogClosed="() => {
+             showDialog = false;
+             trackToEdit = null;
+           }"
+         />
+    }
+}
+
+@code {
+    private IEnumerable<TrackDTO>? tracks;
+    private bool showDialog = false;
+    private TrackDTO? trackToEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTracks();
+    }
+
+    private async Task LoadTracks()
+    {
+        tracks = await TrackService.GetTracksAllAsync();
+    }
+
+    private void ShowCreateTrackDialog()
+    {
+        Console.WriteLine("xssxs"+ showDialog);
+        showDialog = true;
+        trackToEdit = null;
+    }
+
+    private void EditTrack(TrackDTO track)
+    {
+        Console.WriteLine("xssxs2 ");
+        trackToEdit = track; 
+        showDialog = true;
+    }
+
+    private async Task DeleteTrack(Guid trackId)
+    {
+        await TrackService.DeleteTrackAsync(trackId);
+        await LoadTracks(); // Refresh the list
+    }
+}

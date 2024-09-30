@@ -56,7 +56,7 @@ namespace MusicApp.Application.Services
 
         public async Task<IEnumerable<PlaylistDTO>> GetPlaylistByUserIdAsync(Guid userId)
         {
-            var playlists = await _playlistRepository.GetAllPlaylistsAsync(userId);
+            var playlists = await _playlistRepository.GetAllPlaylistsByUserIdAsync(userId);
             return _mapper.Map<IEnumerable<PlaylistDTO>>(playlists);
         }
 
@@ -100,6 +100,12 @@ namespace MusicApp.Application.Services
 
             await _playlistRepository.DeletePlaylistAsync(playlistId);
             return true;
+        }
+
+        public async Task<IEnumerable<PlaylistDTO>> GetPlaylistsAllAsync()
+        {
+            var playlists = await _playlistRepository.GetAllPlaylistsAsync();
+            return _mapper.Map<IEnumerable<PlaylistDTO>>(playlists);
         }
     }
 }

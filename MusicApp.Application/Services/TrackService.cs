@@ -42,5 +42,11 @@ namespace MusicApp.Application.Services
             await _trackRepository.DeleteTrackAsync(trackId);
             return true;
         }
+
+        public async Task<IEnumerable<TrackDTO>> GetTracksAllAsync()
+        {
+            var tracks = await _trackRepository.GetAllTracksAsync();
+            return _mapper.Map<IEnumerable<TrackDTO>>(tracks);
+        }
     }
 }

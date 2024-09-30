@@ -7,6 +7,7 @@ public interface IPlaylistService
 {
     Task<PlaylistDTO> GetPlaylistByIdAsync(Guid playlistId);
     Task<IEnumerable<PlaylistDTO>> GetPlaylistByUserIdAsync(Guid userId);
+    Task<IEnumerable<PlaylistDTO>> GetPlaylistsAllAsync();
     Task<Guid> CreatePlaylistAsync(PlaylistDTO playlistDTO);
     Task<bool> UpdatePlaylistAsync(PlaylistDTO playlistDTO);
     Task<bool> DeletePlaylistAsync(Guid playlistId);

@@ -1,0 +1,15 @@
+﻿@page "/add-track"
+@inject ITrackService TrackService
+
+<h3>Add Track</h3>
+
+
+@code {
+    private TrackDTO track = new TrackDTO();
+
+    private async Task AddTrack()
+    {
+        await TrackService.CreateTrackAsync(track);
+        // Redirect to the track list page
+    }
+}

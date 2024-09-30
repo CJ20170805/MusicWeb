@@ -27,10 +27,16 @@ namespace MusicApp.Infrastructure.Repositories
             return playlist;
         }
 
-        public async Task<IEnumerable<Playlist>> GetAllPlaylistsAsync(Guid userId)
+        public async Task<IEnumerable<Playlist>> GetAllPlaylistsByUserIdAsync(Guid userId)
         {
             return await _context.Playlists
                 .Where(p => p.UserId == userId)
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<Playlist>> GetAllPlaylistsAsync()
+        {
+            return await _context.Playlists
+                .Include(p => p.User)
                 .ToListAsync();
         }
 

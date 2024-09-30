@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MusicApp.Domain.Entities;
 using MusicApp.Domain.Interfaces;
 using MusicApp.Infrastructure.Data;
@@ -12,10 +13,12 @@ namespace MusicApp.Infrastructure.Repositories
     public class TrackRepository : ITrackRepository
     {
         private readonly MusicDbContext _context;
+        private readonly ILogger<TrackRepository> _logger;
 
-        public TrackRepository(MusicDbContext context)
+        public TrackRepository(MusicDbContext context, ILogger<TrackRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<Track> GetTrackByIdAsync(Guid trackId)
@@ -48,8 +51,21 @@ namespace MusicApp.Infrastructure.Repositories
 
         public async Task UpdateTrackAsync(Track track)
         {
-            _context.Tracks.Update(track);
+             _logger.LogInformation("Attempting to update track with ID: {TrackId}", track.Id);
+            // _context.Tracks.Update(track);
+            // update track
+            // _context.Tracks.Attach(track);
+            // _context.Entry(track).State = EntityState.Modified;
+            var existTrack = await _context.Tracks.FindAsync(track.Id);
+            if (existTrack == null)
+            {
+                 _logger.LogWarning("Track with ID {TrackId} not found.", track.Id);
+                throw new Exception("Track not found");
+            }
+            // _context.Tracks.Attach(existTrack);
+            _context.Entry(existTrack).CurrentValues.SetValues(track);
             await _context.SaveChangesAsync();
+          
         }
 
         public async Task DeleteTrackAsync(Guid trackId)

@@ -1,0 +1,19 @@
+﻿@page "/playlists"
+@inject IPlaylistService PlaylistService
+
+<h3>Manage Playlists2222</h3>
+<ul>
+    @foreach (var playlist in playlists)
+    {
+        <li>@playlist.Title</li>
+    }
+</ul>
+
+@code {
+    private IEnumerable<PlaylistDTO> playlists = new List<PlaylistDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        playlists = await PlaylistService.GetPlaylistsAllAsync();
+    }
+}
