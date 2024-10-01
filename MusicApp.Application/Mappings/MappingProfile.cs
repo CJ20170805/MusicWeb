@@ -10,7 +10,7 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Playlist, PlaylistDTO>().ReverseMap();
+        CreateMap<User, UserDTO>().ReverseMap();
 
         CreateMap<Track, TrackDTO>()
              .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => (TimeSpan)src.Duration))  // Map Duration to TimeSpan
@@ -18,10 +18,12 @@ public class MappingProfile : Profile
              .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => new Duration(src.Duration))); // Map TimeSpan back to Duration
 
         CreateMap<Playlist, PlaylistDTO>()
-     .ForMember(dest => dest.Tracks, opt => opt.MapFrom(src => src.Tracks));
-
-        CreateMap<PlaylistDTO, Playlist>()
+            .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
+            .ForMember(dest => dest.Tracks, opt => opt.MapFrom(src => src.Tracks))
+            .ReverseMap()
             .ForMember(dest => dest.Tracks, opt => opt.MapFrom(src => src.Tracks));
 
+
+            
     }
 }

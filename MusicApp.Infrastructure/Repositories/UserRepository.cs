@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using MusicApp.Domain.Entities;
 using MusicApp.Domain.Interfaces;
 using System.Threading.Tasks;
@@ -31,7 +32,16 @@ namespace MusicApp.Infrastructure.Repositories
 
         public async Task UpdateUserAsync(User user)
         {
-            await _userManager.UpdateAsync(user);
+            // if (string.IsNullOrEmpty(user.SecurityStamp))
+            // {
+            //      user.SecurityStamp = Guid.NewGuid().ToString();
+            // }
+            var existUser = await GetUserByIdAsync(user.Id);
+            //_context.Entry(existUser).CurrentValues.SetValues(user);
+            existUser.UserName = user.UserName;
+            existUser.Email = user.Email;
+            
+            await _userManager.UpdateAsync(existUser);
         }
 
         public async Task DeleteUserAsync(Guid userId)
@@ -41,6 +51,16 @@ namespace MusicApp.Infrastructure.Repositories
             {
                 await _userManager.DeleteAsync(user);
             }
+        }
+
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            var users =  _userManager.Users;
+            if (users == null)
+            {
+                throw new Exception("No users found");
+            }
+            return await users.ToListAsync();
         }
     }
 }

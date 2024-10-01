@@ -7,7 +7,7 @@ public class Playlist
     public Guid Id { get; private set; }
     public string? Title { get; private set; }
     public Guid UserId { get; private set; }
-    public User? User { get; private set; }
+    public User User { get; private set; }
     public List<Track>? Tracks { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; } 
@@ -23,6 +23,7 @@ public class Playlist
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
         PlaylistTracks = new List<PlaylistTrack>();
+        User = new User();
     }
 
     public void AddTrack(Track track)

@@ -1,0 +1,92 @@
+﻿@page "/playlists"
+@rendermode InteractiveServer
+@inject IPlaylistService PlaylistService
+
+<PageTitle>Playlist</PageTitle>
+
+<h3>Playlist Management</h3>
+
+@if (playlists == null)
+{
+    <p class="text-muted">Loading...</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>User</th>
+                    @* <th>Album</th> *@
+                    @* <th>Duration</th>
+                    <th>Actions</th> *@
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var playlist in playlists)
+                {
+                    <tr>
+                        <td>@playlist.Title</td>
+                        <td>@playlist.User.Email</td>
+                        @* <td>@playlist.Album</td> *@
+                        <td>
+                            <button class="btn btn-primary btn-sm" @onclick="() => EditPlaylist(playlist)">Edit</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeletePlaylist(playlist.Id)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <button class="btn btn-success" @onclick="ShowCreatePlaylistDialog">Add New Playlist</button>
+
+    @if (showDialog)
+    {
+        <PlaylistDialog
+           Playlist="@playlistToEdit" 
+           OnPlaylistSaved="LoadPlaylists" 
+           OnDialogClosed="() => {
+             showDialog = false;
+             playlistToEdit = null;
+           }"
+         />
+    }
+}
+
+@code {
+    private IEnumerable<PlaylistDTO>? playlists;
+    private bool showDialog = false;
+    private PlaylistDTO? playlistToEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPlaylists();
+    }
+
+    private async Task LoadPlaylists()
+    {
+        playlists = await PlaylistService.GetPlaylistsAllAsync();
+    }
+
+    private void ShowCreatePlaylistDialog()
+    {
+        Console.WriteLine("xssxs"+ showDialog);
+        showDialog = true;
+        playlistToEdit = null;
+    }
+
+    private void EditPlaylist(PlaylistDTO playlist)
+    {
+        Console.WriteLine("xssxs2 ");
+        playlistToEdit = playlist; 
+        showDialog = true;
+    }
+
+    private async Task DeletePlaylist(Guid playlistId)
+    {
+        await PlaylistService.DeletePlaylistAsync(playlistId);
+        await LoadPlaylists(); // Refresh the list
+    }
+}

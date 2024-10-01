@@ -1,0 +1,94 @@
+﻿@page "/users"
+@rendermode InteractiveServer
+@inject IUserService UserService
+
+<PageTitle>User</PageTitle>
+
+<h3>User Management</h3>
+
+@if (users == null)
+{
+    <p class="text-muted">Loading...</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>UserName</th>
+                    <th>Email</th>
+                    <th>IsDeleted</th>
+                    <th>CreatedAt</th>
+                    <th>UpdatedAt</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in users)
+                {
+                    <tr>
+                        <td>@user.UserName</td>
+                        <td>@user.Email</td>
+                        <td>@user.IsDeleted</td>
+                        <td>@user.CreatedAt</td>
+                        <td>@user.UpdatedAt</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" @onclick="() => EditUser(user)">Edit</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteUser(user.Id)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <button class="btn btn-success" @onclick="ShowCreateUserDialog">Add New User</button>
+
+    @if (showDialog)
+    {
+        <UserDialog
+           User="@userToEdit" 
+           OnUserSaved="LoadUsers" 
+           OnDialogClosed="() => {
+             showDialog = false;
+             userToEdit = null;
+           }"
+         />
+    }
+}
+
+@code {
+    private IEnumerable<UserDTO>? users;
+    private bool showDialog = false;
+    private UserDTO? userToEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        users = await UserService.GetUsersAllAsync();
+    }
+
+    private void ShowCreateUserDialog()
+    {
+        Console.WriteLine("xssxs"+ showDialog);
+        showDialog = true;
+        userToEdit = null;
+    }
+
+    private void EditUser(UserDTO user)
+    {
+        Console.WriteLine("xssxs2 " + user);
+        userToEdit = user; 
+        showDialog = true;
+    }
+
+    private async Task DeleteUser(Guid userId)
+    {
+        await UserService.DeleteUserSAsync(userId);
+        await LoadUsers(); // Refresh the list
+    }
+}

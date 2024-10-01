@@ -37,6 +37,7 @@ namespace MusicApp.Infrastructure.Repositories
         {
             return await _context.Playlists
                 .Include(p => p.User)
+                .Include(p => p.Tracks)
                 .ToListAsync();
         }
 
@@ -48,7 +49,13 @@ namespace MusicApp.Infrastructure.Repositories
 
         public async Task UpdatePlaylistAsync(Playlist playlist)
         {
-            _context.Playlists.Update(playlist);
+            var existingPlaylist = await _context.Playlists.FindAsync(playlist.Id);
+            if (existingPlaylist == null)
+            {
+                throw new Exception("Playlist not found");
+            }
+            _context.Entry(existingPlaylist).CurrentValues.SetValues(playlist);
+            // _context.Playlists.Update(playlist);
             await _context.SaveChangesAsync();
         }
 

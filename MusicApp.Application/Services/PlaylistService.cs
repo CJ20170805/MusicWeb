@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using MusicApp.Application.DTOs;
 using MusicApp.Application.Interfaces;
 using MusicApp.Domain.Entities;
@@ -11,12 +12,13 @@ namespace MusicApp.Application.Services
         private readonly IPlaylistRepository _playlistRepository;
         private readonly ITrackRepository _trackRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<PlaylistService> _logger;
 
-        public PlaylistService(IPlaylistRepository playlistRepository, ITrackRepository trackRepository, IMapper mapper)
+        public PlaylistService(IPlaylistRepository playlistRepository, ITrackRepository trackRepository, IMapper mapper, ILogger<PlaylistService> logger)
         {
             _playlistRepository = playlistRepository;
             _trackRepository = trackRepository;
-            
+            _logger = logger;
             _mapper = mapper;
         }
 
@@ -105,6 +107,17 @@ namespace MusicApp.Application.Services
         public async Task<IEnumerable<PlaylistDTO>> GetPlaylistsAllAsync()
         {
             var playlists = await _playlistRepository.GetAllPlaylistsAsync();
+            foreach (var playlist in playlists)
+            {
+                _logger.LogInformation($"Playlist: {playlist.Title}, User: {playlist.User.Email}");
+                if(playlist.Tracks != null)
+                {
+                    foreach (var track in playlist.Tracks)
+                    {
+                        _logger.LogInformation($"Track: {track.Title}");
+                    }
+                }
+            }
             return _mapper.Map<IEnumerable<PlaylistDTO>>(playlists);
         }
     }

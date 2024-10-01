@@ -1,0 +1,90 @@
+﻿@inject IPlaylistService PlaylistService
+
+<div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@((isEditing ? "Edit Playlist" : "Add New Playlist"))</h5>
+                <button type="button" class="close" @onclick="() => OnDialogClosed.InvokeAsync()">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Title:</label>
+                        <input type="text" class="form-control" @bind="currentPlaylist.Title" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Tracks:</label>
+                        <ol class="list-group list-group-numbered">
+                        
+                            @if(currentPlaylist.Tracks != null && currentPlaylist.Tracks.Any())
+                            {
+                                @foreach (var track in currentPlaylist.Tracks)
+                                {
+                                    <li class="list-group-item">@track.Title - @track.Artist</li>
+                                }
+                            }
+                            else
+                            {
+                                 <li class="list-group-item text-muted">No tracks available.</li>
+                            }
+                        </ol>
+                    </div>
+                    <div class="form-group">
+                        <label>User:</label>
+                        <input type="text" disabled class="form-control" @bind="currentPlaylist.User.Email" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="() => OnDialogClosed.InvokeAsync()">Cancel</button>
+                <button class="btn btn-primary" @onclick="SavePlaylist">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnPlaylistSaved { get; set; }
+    [Parameter] public EventCallback OnDialogClosed { get; set; }
+    [Parameter] public PlaylistDTO? Playlist { get; set; } // Playlist for editing
+
+    private PlaylistDTO currentPlaylist = new PlaylistDTO(); // Current playlist being edited/created
+    private bool isEditing = false;
+
+    protected override void OnParametersSet()
+    {
+        Initialize(Playlist);
+    }
+
+    public void Initialize(PlaylistDTO? playlistToEdit)
+    {
+        if (playlistToEdit != null)
+        {
+            currentPlaylist = playlistToEdit; // Use the provided playlist if it's not null
+            isEditing = true; // Set editing state
+        }
+        else
+        {
+            currentPlaylist = new PlaylistDTO{User = new UserDTO()}; // Initialize a new PlaylistDTO if null
+            isEditing = false; // Reset editing state
+        }
+    }
+
+    private async Task SavePlaylist()
+    {
+        if (isEditing)
+        {
+            await PlaylistService.UpdatePlaylistAsync(currentPlaylist);
+        }
+        else
+        {
+            await PlaylistService.CreatePlaylistAsync(currentPlaylist);
+        }
+
+        await OnPlaylistSaved.InvokeAsync();
+        await OnDialogClosed.InvokeAsync();
+    }
+}
