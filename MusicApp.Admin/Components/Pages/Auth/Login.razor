@@ -1,6 +1,118 @@
-﻿@page "/auth/login"
+﻿@page "/Account/login"
+@attribute [AllowAnonymous]
+@rendermode InteractiveServer
+@using MusicApp.Domain.Entities
+@inject NavigationManager NavigationManager
+@inject SignInManager<User> SignInManager
+@inject ILogger<Login> Logger
+
 <h3>Login</h3>
 
-@code {
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="sds">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
+    <div class="form-group">
+        <label>Username</label>
+        <InputText Value="@loginModel.Username" 
+                   ValueChanged="@(value => 
+                   {
+                       loginModel.Username = value;
+                       Logger.LogInformation("Username changed to: {Username}", value);
+                   })" 
+                   ValueExpression="() => loginModel.Username" 
+                   class="form-control" />
+        <ValidationMessage For="@(() => loginModel.Username)" />
+    </div>
+
+    <div class="form-group">
+        <label>Password</label>
+        <InputText Value="@loginModel.Password" 
+                   ValueChanged="@(value => 
+                   {
+                       loginModel.Password = value;
+                       Logger.LogInformation("Password changed.");
+                   })" 
+                   ValueExpression="() => loginModel.Password" 
+                   type="password" 
+                   class="form-control" />
+        <ValidationMessage For="@(() => loginModel.Password)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" disabled="@isLoggingIn">Login</button>
+
+    @if (!string.IsNullOrWhiteSpace(loginErrorMessage))
+    {
+        <div class="alert alert-danger mt-3">@loginErrorMessage</div>
+    }
+</EditForm>
+
+<div>
+    <p>Debug: Username - @loginModel.Username</p>
+    <p>Debug: Password - @loginModel.Password</p>
+</div>
+
+@code {
+    private LoginDTO loginModel = new LoginDTO
+    {
+        Username = string.Empty,
+        Password = string.Empty
+    };
+
+    private bool isLoggingIn = false;
+    private string? loginErrorMessage;
+
+    protected override void OnInitialized() // Change to Task
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var ErrMsg = queryParams["ErrMsg"];
+        loginErrorMessage = ErrMsg;
+    }
+
+    private void HandleLogin()
+    {
+        isLoggingIn = true;
+        loginErrorMessage = null;
+
+        try
+        {
+            Logger.LogInformation("Attempting login for user: {Username}", loginModel.Username);
+
+            string queryString = $"Username={loginModel.Username}&Password={loginModel.Password}";
+
+            Console.WriteLine("queryString:::" + queryString);
+
+            NavigationManager.NavigateTo($"/Account/set-cookie?{queryString}", forceLoad: true);
+
+            @* // Perform login
+            var signInResult = await SignInManager.PasswordSignInAsync(
+                loginModel.Username,
+                loginModel.Password,
+                isPersistent: false,
+                lockoutOnFailure: false);
+
+            if (signInResult.Succeeded)
+            {
+                Logger.LogInformation("User {Username} logged in successfully", loginModel.Username);
+
+                // Redirect after login
+                NavigationManager.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                loginErrorMessage = "Invalid username or password. Please try again.";
+                Logger.LogWarning("Login failed for user: {Username}", loginModel.Username);
+            } *@
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred during the login process.");
+            loginErrorMessage = "An unexpected error occurred. Please try again later.";
+        }
+        finally
+        {
+            isLoggingIn = false;
+        }
+    }
 }

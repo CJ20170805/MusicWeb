@@ -1,10 +1,6 @@
-﻿@* <Router AppAssembly="typeof(Program).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-</Router> *@
-
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Authorization
+@using MusicApp.Admin.Components.Pages.Auth
 
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
@@ -18,13 +14,27 @@
         }
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <p>Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
 </Router>
 
 @code {
     private bool IsAuthRoute(RouteData routeData)
     {
-        var path = routeData.PageType?.Name;
-        Console.WriteLine("Paththt" + path);
-        return path == "Login" || path == "Register"; // Check for more pages if needed
+        if (routeData.PageType == null)
+            return false;
+
+        // Define your routes based on the page types
+        var authPageTypes = new[]
+        {
+            typeof(Login),          // Assuming you have a Login component
+            // typeof(Register),       // Assuming you have a Register component
+        };
+
+        // Check if the current PageType is in the defined auth pages
+        return authPageTypes.Contains(routeData.PageType);
     }
 }

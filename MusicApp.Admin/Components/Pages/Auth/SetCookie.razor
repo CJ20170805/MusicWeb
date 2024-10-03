@@ -1,0 +1,72 @@
+@page "/Account/set-cookie"
+@attribute [AllowAnonymous]
+@using MusicApp.Domain.Entities
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+@inject SignInManager<User> SignInManager
+@inject ILogger<Login> Logger
+
+@code {
+    protected override async Task OnInitializedAsync() // Change to Task
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var Username = queryParams["Username"];
+        var Password = queryParams["Password"];
+
+        if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
+        {
+            throw new Exception("Username or Password not found");
+        }
+
+        // Log the values for debugging
+        Console.WriteLine($"PDDDD: Username: {Username}, Password: {Password}");
+
+        // Perform login
+        var signInResult = await SignInManager.PasswordSignInAsync(
+            Username,
+            Password,
+            isPersistent: false,
+            lockoutOnFailure: false);
+
+        if (signInResult.Succeeded)
+        {
+            Logger.LogInformation("User {Username} logged in successfully", Username);
+
+            // Redirect after login
+            NavigationManager.NavigateTo("/", forceLoad: true); // Redirect to a different page
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/Account/login?ErrMsg=LoginFailed", forceLoad: true);
+            Logger.LogWarning("Login failed for user: {Username}", Username);
+        }
+
+        // Cookie handling can be done after a successful login if needed
+        // The following is an example of how to set a cookie after checking for a token
+        var token = queryParams["token"];
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            var httpContext = HttpContextAccessor.HttpContext;
+            if (httpContext != null)
+            {
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true, // Prevents JavaScript from accessing the cookie
+                    Expires = DateTimeOffset.UtcNow.AddDays(30), // Optional expiration
+                    Secure = true, // Set to true if using HTTPS
+                };
+
+                // Set the cookie in the response
+                httpContext.Response.Cookies.Append("jwt", token, cookieOptions);
+            }
+
+            // Redirect to the main page or wherever needed
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/Account/login"); // Redirect back if no token
+        }
+    }
+}

@@ -1,7 +1,11 @@
 ﻿@inherits LayoutComponentBase
+@attribute [AllowAnonymous]
 
-<MudThemeProvider />
+@* <MudThemeProvider />
 
 <MudMainContent>
     @Body
-</MudMainContent>
+</MudMainContent> *@
+<div>
+    @Body
+</div>

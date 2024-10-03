@@ -4,6 +4,7 @@
     <ProjectReference Include="..\MusicApp.Application\MusicApp.Application.csproj" />
     <ProjectReference Include="..\MusicApp.Domain\MusicApp.Domain.csproj" />
     <ProjectReference Include="..\MusicApp.Infrastructure\MusicApp.Infrastructure.csproj" />
+    <ProjectReference Include="..\MusicApp.WebAPI\MusicApp.WebAPI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

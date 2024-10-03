@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MusicApp.WebAPI.Controllers
 {
-    // [Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PlaylistController : ControllerBase

@@ -5,9 +5,10 @@ namespace MusicApp.Application.DTOs;
 
 public class LoginDTO
 {
-    [Required]
-    public required string Username { get; set; }
+    [Required(ErrorMessage = "The Username field is required.")]
+    public string Username { get; set; } = string.Empty;
 
-    [Required]
-    public required string Password { get; set; }
+    [Required(ErrorMessage = "The Password field is required.")]
+    [DataType(DataType.Password)]
+    public string Password { get; set; } = string.Empty;
 }

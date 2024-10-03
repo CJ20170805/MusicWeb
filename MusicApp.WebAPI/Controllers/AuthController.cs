@@ -1,7 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text; 
+using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -60,7 +60,15 @@ public class AuthController : ControllerBase
         if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
         {
             var token = GenerateJwtToken(user);
-            return Ok(new { token });
+            // Sign the user in for cookie-based authentication
+            var signInResult = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: false, lockoutOnFailure: false);
+
+            if (signInResult.Succeeded)
+            {
+                // Return JWT token for API requests
+                return Ok(new { token });
+            }
+            return Unauthorized();
         }
         return Unauthorized();
     }
@@ -68,7 +76,7 @@ public class AuthController : ControllerBase
     private string GenerateJwtToken(User user)
     {
         var configKey = _configuration["Jwt:Key"];
-        if(configKey == null)
+        if (configKey == null)
         {
             throw new Exception("JWT Key not found in configuration");
         }
