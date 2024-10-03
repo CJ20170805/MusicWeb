@@ -15,7 +15,14 @@ using MusicApp.Application.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// Add CORS services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder => builder.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod());
+});
 
 
 // Add services to the container.
@@ -82,6 +89,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+ app.UseCors("AllowAll"); 
 
 app.MapControllers();
 
