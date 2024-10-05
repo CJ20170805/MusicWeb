@@ -1,90 +1,109 @@
 ﻿@inject IPlaylistService PlaylistService
 
-<div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">@((isEditing ? "Edit Playlist" : "Add New Playlist"))</h5>
-                <button type="button" class="close" @onclick="() => OnDialogClosed.InvokeAsync()">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form>
-                    <div class="form-group">
-                        <label>Title:</label>
-                        <input type="text" class="form-control" @bind="currentPlaylist.Title" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Tracks:</label>
-                        <ol class="list-group list-group-numbered">
-                        
-                            @if(currentPlaylist.Tracks != null && currentPlaylist.Tracks.Any())
-                            {
-                                @foreach (var track in currentPlaylist.Tracks)
-                                {
-                                    <li class="list-group-item">@track.Title - @track.Artist</li>
-                                }
-                            }
-                            else
-                            {
-                                 <li class="list-group-item text-muted">No tracks available.</li>
-                            }
-                        </ol>
-                    </div>
-                    <div class="form-group">
-                        <label>User:</label>
-                        <input type="text" disabled class="form-control" @bind="currentPlaylist.User.Email" required />
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" @onclick="() => OnDialogClosed.InvokeAsync()">Cancel</button>
-                <button class="btn btn-primary" @onclick="SavePlaylist">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@code {
-    [Parameter] public EventCallback OnPlaylistSaved { get; set; }
-    [Parameter] public EventCallback OnDialogClosed { get; set; }
-    [Parameter] public PlaylistDTO? Playlist { get; set; } // Playlist for editing
-
-    private PlaylistDTO currentPlaylist = new PlaylistDTO(); // Current playlist being edited/created
-    private bool isEditing = false;
-
-    protected override void OnParametersSet()
-    {
-        Initialize(Playlist);
-    }
-
-    public void Initialize(PlaylistDTO? playlistToEdit)
-    {
-        if (playlistToEdit != null)
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @if (isDeleting)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Delete" Class="mr-3 mb-n1" /> @("Delete Playlist")
+            }
+            else if (isEditing)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" /> @("Edit Playlist")
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3 mb-n1" /> @("Add New Playlist")
+            }
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (!isDeleting)
         {
-            currentPlaylist = playlistToEdit; // Use the provided playlist if it's not null
-            isEditing = true; // Set editing state
+            <MudTextField @bind-Value="@Playlist.Title" Label="Title" ReadOnly="false" />
+            <MudTextField class="mt-4 mb-4" Value="@Playlist.User?.UserName" Label="UserName" ReadOnly="true" />
+
+            @if (Playlist.Tracks != null)
+            {
+                 <MudText Typo="Typo.inherit">Tracks</MudText>
+                <MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height:300px;">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var track in Playlist.Tracks)
+                        {
+                            <tr>
+                                <td>@track.Title</td>
+                                <td>@track.Artist</td>
+                                <td>@track.Duration.ToString(@"hh\:mm\:ss")</td> <!-- Formats TimeSpan -->
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
         }
         else
         {
-            currentPlaylist = new PlaylistDTO{User = new UserDTO()}; // Initialize a new PlaylistDTO if null
-            isEditing = false; // Reset editing state
+            <MudText>Are you sure you want to delete the track "<strong>@Playlist.Title</strong>"?</MudText>
         }
-    }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
 
-    private async Task SavePlaylist()
+        @if (isDeleting)
+        {
+            <MudButton Color="Color.Error" OnClick="DeletePlaylist">Delete</MudButton>
+        }
+        else
+        {
+            if (isEditing)
+            {
+                <MudButton Color="Color.Primary" OnClick="Save">@("Save")</MudButton>
+            }
+            else
+            {
+                <MudButton Color="Color.Primary" OnClick="Save">@("Create")</MudButton>
+            }
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public PlaylistDTO Playlist { get; set; } = new PlaylistDTO();
+
+    [Parameter]
+    public bool isEditing { get; set; }
+
+    [Parameter]
+    public bool isDeleting { get; set; }
+
+    private void Cancel() => MudDialog?.Cancel();
+    private async Task Save()
     {
         if (isEditing)
         {
-            await PlaylistService.UpdatePlaylistAsync(currentPlaylist);
+            await PlaylistService.UpdatePlaylistAsync(Playlist); // Update
         }
         else
         {
-            await PlaylistService.CreatePlaylistAsync(currentPlaylist);
+            await PlaylistService.CreatePlaylistAsync(Playlist); // Create
         }
+        MudDialog?.Close(DialogResult.Ok(Playlist.Id)); // Close dialog
+    }
 
-        await OnPlaylistSaved.InvokeAsync();
-        await OnDialogClosed.InvokeAsync();
+    // Delete track
+    private async Task DeletePlaylist()
+    {
+        await PlaylistService.DeletePlaylistAsync(Playlist.Id);
+        MudDialog?.Close(DialogResult.Ok(Playlist.Id));
     }
 }

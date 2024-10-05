@@ -1,94 +1,122 @@
 ﻿@page "/users"
-@rendermode InteractiveServer
 @inject IUserService UserService
+@inject IDialogService DialogService
+
 
 <PageTitle>User</PageTitle>
 
-<h3>User Management</h3>
-
-@if (users == null)
-{
-    <p class="text-muted">Loading...</p>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>UserName</th>
-                    <th>Email</th>
-                    <th>IsDeleted</th>
-                    <th>CreatedAt</th>
-                    <th>UpdatedAt</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var user in users)
-                {
-                    <tr>
-                        <td>@user.UserName</td>
-                        <td>@user.Email</td>
-                        <td>@user.IsDeleted</td>
-                        <td>@user.CreatedAt</td>
-                        <td>@user.UpdatedAt</td>
-                        <td>
-                            <button class="btn btn-primary btn-sm" @onclick="() => EditUser(user)">Edit</button>
-                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteUser(user.Id)">Delete</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <button class="btn btn-success" @onclick="ShowCreateUserDialog">Add New User</button>
-
-    @if (showDialog)
-    {
-        <UserDialog
-           User="@userToEdit" 
-           OnUserSaved="LoadUsers" 
-           OnDialogClosed="() => {
-             showDialog = false;
-             userToEdit = null;
-           }"
-         />
-    }
-}
+<MudTable Items="@users" Hover="true" SortLabel="Sort By">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">User Management</MudText>
+        <MudSpacer />
+        <MudButton class="mr-6" OnClick="handleCreate" Variant="Variant.Filled" Color="Color.Primary">Add</MudButton>
+    </ToolBarContent>
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col style="width:18%;" />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel InitialDirection="SortDirection.Ascending"
+                SortBy="new Func<UserDTO, object>(x=>x.UserName ?? string.Empty)">UserName</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<UserDTO, object>(x=>x.Email ?? string.Empty)">Email</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<UserDTO, object>(x=>x.IsDeleted)">IsDeleted</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<UserDTO, object>(x=>x.CreatedAt)">CreatedAt</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<UserDTO, object>(x=>x.UpdatedAt)">UpdatedAt</MudTableSortLabel>
+        </MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="UserName">@context.UserName</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="IsDeleted">@context.IsDeleted</MudTd>
+        <MudTd DataLabel="CreatedAt">@context.CreatedAt</MudTd>
+        <MudTd DataLabel="UpdatedAt">@context.UpdatedAt</MudTd>
+        <MudTd>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="()=> handleEdit(context)">Edit</MudButton>
+            <MudButton class="ml-2" Variant="Variant.Outlined" Size="Size.Small" OnClick="()=>handleDelete(context)" Color="Color.Secondary">Delete
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" />
+    </PagerContent>
+</MudTable>
 
 @code {
     private IEnumerable<UserDTO>? users;
-    private bool showDialog = false;
-    private UserDTO? userToEdit;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadUsers();
+        await LoadData();
     }
 
-    private async Task LoadUsers()
+    private async Task LoadData()
     {
         users = await UserService.GetUsersAllAsync();
     }
 
-    private void ShowCreateUserDialog()
+    private async Task handleCreate()
     {
-        Console.WriteLine("xssxs"+ showDialog);
-        showDialog = true;
-        userToEdit = null;
+        var parameters = new DialogParameters
+        {
+            { nameof(UserDialog.User), new UserDTO() }, 
+            { nameof(UserDialog.isEditing), false } 
+        };
+
+        var dialog = await DialogService.ShowAsync<UserDialog>("Add", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+             await LoadData();
+        }
     }
 
-    private void EditUser(UserDTO user)
+    private async Task handleEdit(UserDTO user)
     {
-        Console.WriteLine("xssxs2 " + user);
-        userToEdit = user; 
-        showDialog = true;
+        var parameters = new DialogParameters
+        {
+            { nameof(UserDialog.User), user },
+            { nameof(UserDialog.isEditing), true }
+        };
+
+        var dialog = await DialogService.ShowAsync<UserDialog>("Edit", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+             await LoadData();
+        }
     }
 
-    private async Task DeleteUser(Guid userId)
+    private async Task handleDelete(UserDTO user)
     {
-        await UserService.DeleteUserSAsync(userId);
-        await LoadUsers(); // Refresh the list
+         var parameters = new DialogParameters
+        {
+            { nameof(UserDialog.User), user },
+            { nameof(UserDialog.isEditing), false }, 
+            { nameof(UserDialog.isDeleting), true } 
+        };
+
+        var dialog = await DialogService.ShowAsync<UserDialog>("Delete", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await LoadData();
+        }
     }
 }
