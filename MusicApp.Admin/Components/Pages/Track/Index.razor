@@ -1,93 +1,111 @@
 ﻿@page "/tracks"
-@rendermode InteractiveServer
 @inject ITrackService TrackService
+@inject IDialogService DialogService
 
 <PageTitle>Track</PageTitle>
 
-<h3>Track Management</h3>
 
-@if (tracks == null)
-{
-    <p class="text-muted">Loading...</p>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Artist</th>
-                    @* <th>Album</th> *@
-                    <th>Duration</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var track in tracks)
-                {
-                    <tr>
-                        <td>@track.Title</td>
-                        <td>@track.Artist</td>
-                        @* <td>@track.Album</td> *@
-                        <td>@track.Duration</td>
-                        <td>
-                            <button class="btn btn-primary btn-sm" @onclick="() => EditTrack(track)">Edit</button>
-                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteTrack(track.Id)">Delete</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <button class="btn btn-success" @onclick="ShowCreateTrackDialog">Add New Track</button>
-
-    @if (showDialog)
-    {
-        <TrackDialog
-           Track="@trackToEdit" 
-           OnTrackSaved="LoadTracks" 
-           OnDialogClosed="() => {
-             showDialog = false;
-             trackToEdit = null;
-           }"
-         />
-    }
-}
+<MudTable Items="@tracks" Hover="true" SortLabel="Sort By">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Track Management</MudText>
+        <MudSpacer />
+        <MudButton class="mr-6" OnClick="handleCreate" Variant="Variant.Filled" Color="Color.Primary">Add</MudButton>
+    </ToolBarContent>
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+        <col style="width:18%;" />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<TrackDTO, object>(x=>x.Title ?? string.Empty)">Title</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel InitialDirection="SortDirection.Ascending"
+                SortBy="new Func<TrackDTO, object>(x=>x.Artist ?? string.Empty)">Artist</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<TrackDTO, object>(x=>x.Duration)">Duration</MudTableSortLabel>
+        </MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Title">@context.Title</MudTd>
+        <MudTd DataLabel="Artist">@context.Artist</MudTd>
+        <MudTd DataLabel="Duration">@context.Duration</MudTd>
+        <MudTd>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="()=> handleEdit(context)">Edit</MudButton>
+            <MudButton class="ml-2" Variant="Variant.Outlined" Size="Size.Small" OnClick="()=>handleDelete(context)" Color="Color.Secondary">Delete
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" />
+    </PagerContent>
+</MudTable>
 
 @code {
-    private IEnumerable<TrackDTO>? tracks;
-    private bool showDialog = false;
-    private TrackDTO? trackToEdit;
-
+    private IEnumerable<TrackDTO> tracks = new List<TrackDTO>();
     protected override async Task OnInitializedAsync()
     {
-        await LoadTracks();
+        await LoadData();
     }
 
-    private async Task LoadTracks()
+    private async Task LoadData()
     {
         tracks = await TrackService.GetTracksAllAsync();
     }
 
-    private void ShowCreateTrackDialog()
+    private async Task handleCreate()
     {
-        Console.WriteLine("xssxs"+ showDialog);
-        showDialog = true;
-        trackToEdit = null;
+        var parameters = new DialogParameters
+        {
+            { nameof(TrackDialog.Track), new TrackDTO() }, 
+            { nameof(TrackDialog.isEditing), false } 
+        };
+
+        var dialog = await DialogService.ShowAsync<TrackDialog>("Add", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+             await LoadData();
+        }
     }
 
-    private void EditTrack(TrackDTO track)
+    private async Task handleEdit(TrackDTO track)
     {
-        Console.WriteLine("xssxs2 ");
-        trackToEdit = track; 
-        showDialog = true;
+        var parameters = new DialogParameters
+        {
+            { nameof(TrackDialog.Track), track },
+            { nameof(TrackDialog.isEditing), true }
+        };
+
+        var dialog = await DialogService.ShowAsync<TrackDialog>("Edit", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+             await LoadData();
+        }
     }
 
-    private async Task DeleteTrack(Guid trackId)
+    private async Task handleDelete(TrackDTO track)
     {
-        await TrackService.DeleteTrackAsync(trackId);
-        await LoadTracks(); // Refresh the list
+         var parameters = new DialogParameters
+        {
+            { nameof(TrackDialog.Track), track },
+            { nameof(TrackDialog.isEditing), false }, 
+            { nameof(TrackDialog.isDeleting), true } 
+        };
+
+        var dialog = await DialogService.ShowAsync<TrackDialog>("Delete", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await LoadData();
+        }
     }
 }

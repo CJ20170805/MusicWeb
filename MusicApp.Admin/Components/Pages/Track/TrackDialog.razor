@@ -1,90 +1,98 @@
 ﻿@inject ITrackService TrackService
 
-<div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">@((isEditing ? "Edit Track" : "Add New Track"))</h5>
-                <button type="button" class="close" @onclick="() => OnDialogClosed.InvokeAsync()">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form>
-                    <div class="form-group">
-                        <label>Title:</label>
-                        <input type="text" class="form-control" @bind="currentTrack.Title" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Artist:</label>
-                        <input type="text" class="form-control" @bind="currentTrack.Artist" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Duration (HH:mm:ss):</label>
-                        <input type="text" class="form-control" @bind="formattedDuration" placeholder="HH:mm:ss" required />
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" @onclick="() => OnDialogClosed.InvokeAsync()">Cancel</button>
-                <button class="btn btn-primary" @onclick="SaveTrack">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @if (isDeleting)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Delete" Class="mr-3 mb-n1"/> @("Delete Track")
+            }
+            else if (isEditing)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1"/> @("Edit Track")
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3 mb-n1"/> @("Add New Track")
+            }
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (!isDeleting)
+        {
+            <MudTextField @bind-Value="@Track.Title" Label="Title" ReadOnly="false"/>
+            <MudTextField @bind-Value="@Track.Artist" Label="Artist" ReadOnly="false"/>
+            <MudTextField @bind-Value="@formattedDuration" Label="Duration" ReadOnly="false"/>
+        }
+        else
+        {
+            <MudText>Are you sure you want to delete the track "<strong>@Track.Title</strong>"?</MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        
+        @if (isDeleting)
+        {
+            <MudButton Color="Color.Error" OnClick="DeleteTrack">Delete</MudButton>
+        }
+        else
+        {
+            if (isEditing)
+            {
+                <MudButton Color="Color.Primary" OnClick="Save">@("Save")</MudButton>
+            }
+            else
+            {
+                <MudButton Color="Color.Primary" OnClick="Save">@("Create")</MudButton>
+            }
+        }
+    </DialogActions>
+</MudDialog>
 
 @code {
-    [Parameter] public EventCallback OnTrackSaved { get; set; }
-    [Parameter] public EventCallback OnDialogClosed { get; set; }
-    [Parameter] public TrackDTO? Track { get; set; } // Track for editing
+    [CascadingParameter]
+    private MudDialogInstance? MudDialog { get; set; }
 
-    private TrackDTO currentTrack = new TrackDTO(); // Current track being edited/created
-    private bool isEditing = false;
+    [Parameter]
+    public TrackDTO Track { get; set; } = new TrackDTO();
 
-    protected override void OnParametersSet()
+    [Parameter]
+    public bool isEditing { get; set; }
+
+    [Parameter]
+    public bool isDeleting { get; set; } 
+
+    private void Cancel() => MudDialog?.Cancel();
+    private async Task Save()
     {
-        Initialize(Track);
+        if (isEditing)
+        {
+            await TrackService.UpdateTrackAsync(Track); // Update 
+        }
+        else
+        {
+            await TrackService.CreateTrackAsync(Track); // Create 
+        }
+        MudDialog?.Close(DialogResult.Ok(Track.Id)); // Close dialog
     }
 
+    // Delete track
+    private async Task DeleteTrack()
+    {
+        await TrackService.DeleteTrackAsync(Track.Id); 
+        MudDialog?.Close(DialogResult.Ok(Track.Id)); 
+    }
     private string formattedDuration
     {
-        get => currentTrack.Duration.ToString(@"hh\:mm\:ss"); // Convert TimeSpan to "HH:mm:ss"
+        get => Track.Duration.ToString(@"hh\:mm\:ss"); // Convert TimeSpan to "HH:mm:ss"
         set
         {
             // Convert the string back to TimeSpan
             if (TimeSpan.TryParseExact(value, @"hh\:mm\:ss", null, out var parsedDuration))
             {
-                currentTrack.Duration = parsedDuration;
+                Track.Duration = parsedDuration;
             }
         }
-    }
-
-    public void Initialize(TrackDTO? trackToEdit)
-    {
-        if (trackToEdit != null)
-        {
-            currentTrack = trackToEdit; // Use the provided track if it's not null
-            isEditing = true; // Set editing state
-        }
-        else
-        {
-            currentTrack = new TrackDTO(); // Initialize a new TrackDTO if null
-            isEditing = false; // Reset editing state
-        }
-    }
-
-    private async Task SaveTrack()
-    {
-        if (isEditing)
-        {
-            await TrackService.UpdateTrackAsync(currentTrack);
-        }
-        else
-        {
-            await TrackService.CreateTrackAsync(currentTrack);
-        }
-
-        await OnTrackSaved.InvokeAsync();
-        await OnDialogClosed.InvokeAsync();
     }
 }

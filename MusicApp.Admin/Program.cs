@@ -43,11 +43,12 @@ builder.Services.AddAuthentication(options =>
     options.LogoutPath = "/Account/Logout"; // Adjust logout path
 });
 
+builder.Services.AddMudServices();
+
 // AutoMapper setup
 builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddMudServices();
 
 // Set up the HTTP client for API calls
 builder.Services.AddHttpClient("API", client =>
