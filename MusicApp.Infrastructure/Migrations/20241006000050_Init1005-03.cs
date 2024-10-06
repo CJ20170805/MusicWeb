@@ -5,7 +5,7 @@
 namespace MusicApp.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class PlaylistTrack2 : Migration
+    public partial class Init100503 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

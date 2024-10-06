@@ -11,4 +11,5 @@ public class PlaylistDTO
     public UserDTO? User { get; set; }
     public List<TrackDTO>? Tracks { get; set; } 
     public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

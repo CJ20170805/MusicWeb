@@ -1,5 +1,6 @@
 ﻿@inject IPlaylistService PlaylistService
 
+
 <MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6">
@@ -18,39 +19,74 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        @if (!isDeleting)
-        {
-            <MudTextField @bind-Value="@Playlist.Title" Label="Title" ReadOnly="false" />
-            <MudTextField class="mt-4 mb-4" Value="@Playlist.User?.UserName" Label="UserName" ReadOnly="true" />
-
-            @if (Playlist.Tracks != null)
+        <MudForm @ref="form" @bind-IsValid="isValid">
+            @if (!isDeleting)
             {
-                 <MudText Typo="Typo.inherit">Tracks</MudText>
-                <MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height:300px;">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Artist</th>
-                            <th>Duration</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var track in Playlist.Tracks)
+                <MudTextField @bind-Value="@Playlist.Title" Required="true" Label="Title" ErrorText="Title is required"
+                    ReadOnly="false" />
+                @* <MudTextField class="mt-4 mb-4" Value="@Playlist.User?.UserName" Label="UserName" ReadOnly="true" /> *@
+                <MudStack class="mt-4 mb-4">
+                    <MudSelect Required="true" @bind-Value="Playlist.UserId" Label="User Select" Typo="Typo.inherit"
+                        Disabled="false" ReadOnly="false" Placeholder="Select a user">
+                        @foreach (var user in Userlist)
                         {
-                            <tr>
-                                <td>@track.Title</td>
-                                <td>@track.Artist</td>
-                                <td>@track.Duration.ToString(@"hh\:mm\:ss")</td> <!-- Formats TimeSpan -->
-                            </tr>
+                            <MudSelectItem Value="@user.Id">@user.UserName</MudSelectItem>
                         }
-                    </tbody>
-                </MudSimpleTable>
+                    </MudSelect>
+                </MudStack>
+                @if(isEditing)
+                {// Track select
+                 <MudSelect 
+                    MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
+                    MultiSelection="true"
+                    SelectedValues="selectedTrackIds"
+                    SelectedValuesChanged="OnSelectedValuesChanged"
+                    T="string" 
+                    Label="Tracks"
+                    AdornmentIcon="@Icons.Material.Filled.Search" 
+                    AnchorOrigin="Origin.BottomCenter">
+
+                    @foreach (var track in Tracklist)
+                    {
+                        <MudSelectItem T="string" Value="@track.Id.ToString()">@track.Title</MudSelectItem>
+                    }
+                </MudSelect>
+                }
+                // Tracks list
+                @if (Playlist.Tracks != null)
+                {
+                    <MudText Typo="Typo.inherit">Tracks</MudText>
+                    <MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height:300px;">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Artist</th>
+                                <th>Duration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var track in Playlist.Tracks)
+                            {
+                                <tr>
+                                    <td>@track.Title</td>
+                                    <td>@track.Artist</td>
+                                    <td>@track.Duration.ToString(@"hh\:mm\:ss")</td> <!-- Formats TimeSpan -->
+                                    <td>
+                                        <MudButton Color="Color.Error" OnClick="@(() => RemoveTrack(Playlist.Id, track.Id))">Remove
+                                        </MudButton>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
             }
-        }
-        else
-        {
-            <MudText>Are you sure you want to delete the track "<strong>@Playlist.Title</strong>"?</MudText>
-        }
+            else
+            {
+                <MudText>Are you sure you want to delete the track "<strong>@Playlist.Title</strong>"?</MudText>
+            }
+        </MudForm>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -63,11 +99,11 @@
         {
             if (isEditing)
             {
-                <MudButton Color="Color.Primary" OnClick="Save">@("Save")</MudButton>
+                <MudButton Color="Color.Primary" Disabled="!isValid" OnClick="Save">@("Save")</MudButton>
             }
             else
             {
-                <MudButton Color="Color.Primary" OnClick="Save">@("Create")</MudButton>
+                <MudButton Color="Color.Primary" Disabled="!isValid" OnClick="Save">@("Create")</MudButton>
             }
         }
     </DialogActions>
@@ -78,17 +114,76 @@
     private MudDialogInstance? MudDialog { get; set; }
 
     [Parameter]
+    public IEnumerable<UserDTO> Userlist { get; set; } = new List<UserDTO>();
+
+    [Parameter]
     public PlaylistDTO Playlist { get; set; } = new PlaylistDTO();
+
+    [Parameter]
+    public IEnumerable<TrackDTO> Tracklist { get; set; } = new List<TrackDTO>();
 
     [Parameter]
     public bool isEditing { get; set; }
 
     [Parameter]
     public bool isDeleting { get; set; }
+    private string TrackValue {get; set;} = "";
+    private IEnumerable<string> selectedTrackIds = new List<string>();
+    private IEnumerable<string> previousTrackIds = new List<string>(); // Store previous track selection
+
+    private MudForm? form;
+    private bool isValid;
 
     private void Cancel() => MudDialog?.Cancel();
+
+    protected override void OnInitialized()
+    {
+        Console.WriteLine("On INit!!!");
+        // If creating a new playlist, make sure to initialize the UserDTO object
+        if (!isEditing)
+        {
+            Playlist.UserId = Guid.Empty; // Default GUID (Empty) if no user selected
+        }
+
+        // Initialize selectedTrackIds from existing Playlist tracks
+        if (Playlist.Tracks != null)
+        {
+            selectedTrackIds = Playlist.Tracks.Select(t => t.Id.ToString()).ToList();
+            foreach(var st in selectedTrackIds)
+            {
+                Console.WriteLine("On init" + st);
+            }
+            previousTrackIds = new List<string>(selectedTrackIds); // Make a copy for comparison
+        }
+    }
     private async Task Save()
     {
+        if (form == null) return;
+
+        await form.Validate(); // Trigger form validation
+        if (!isValid) return; // Don't save if the form is invalid
+
+        // Determine added and removed tracks
+        var addedTracks = selectedTrackIds.Except(previousTrackIds); // Tracks added
+        var removedTracks = previousTrackIds.Except(selectedTrackIds); // Tracks removed
+
+        // Apply added tracks
+        foreach (var trackId in addedTracks)
+        {
+            Console.WriteLine("AddT" + trackId);
+            await AddTrack(Playlist.Id, Guid.Parse(trackId));
+        }
+
+        // Apply removed tracks
+        foreach (var trackId in removedTracks)
+        {
+            Console.WriteLine("REMT" + trackId);
+            await RemoveTrack(Playlist.Id, Guid.Parse(trackId));
+        }
+
+        // After saving, update previousTrackIds to match the selectedTrackIds
+        previousTrackIds = new List<string>(selectedTrackIds);
+
         if (isEditing)
         {
             await PlaylistService.UpdatePlaylistAsync(Playlist); // Update
@@ -106,4 +201,60 @@
         await PlaylistService.DeletePlaylistAsync(Playlist.Id);
         MudDialog?.Close(DialogResult.Ok(Playlist.Id));
     }
+
+    private async Task RemoveTrack(Guid PlaylistId, Guid TrackId)
+    {
+        await PlaylistService.RemoveTrackFromPlaylistAsync(PlaylistId, TrackId);
+        // Update local state
+         if (Playlist.Tracks != null)
+        {
+            var trackToRemove = Playlist.Tracks.FirstOrDefault(t => t.Id == TrackId);
+            if (trackToRemove != null)
+            {
+                Playlist.Tracks.Remove(trackToRemove); // Update local state
+                selectedTrackIds = Playlist.Tracks.Select(t => t.Id.ToString()).ToList();
+            }
+        }
+    }
+
+    private async Task AddTrack(Guid PlaylistId, Guid TrackId)
+    {
+        await PlaylistService.AddTrackToPlaylistAsync(PlaylistId, TrackId);
+        if(Playlist.Tracks != null)
+        {
+            var addedTrack = Tracklist.FirstOrDefault(t => t.Id == TrackId);
+            if(addedTrack != null)
+            {
+                Playlist.Tracks.Add(addedTrack);
+            }
+        }
+    }
+    private string GetMultiSelectionText(List<string> selectedValues)
+    {
+        return $"{selectedValues.Count} track{(selectedValues.Count > 1 ? "s have" : " has")} been selected";
+    }
+    private void OnSelectedValuesChanged(IEnumerable<string> selectedValues) // Accept IEnumerable<string>
+    {
+        @* foreach (var sv in selectedValues)
+        {
+            Console.WriteLine("selectedValues:" + sv);
+        } *@
+       // Update selectedTrackIds with the newly selected values
+        selectedTrackIds = selectedValues.ToList();
+
+        foreach (var sv in selectedTrackIds)
+        {
+            Console.WriteLine("selectedTrackIds:" + sv);
+        }
+        
+        // Just update the UI to reflect the currently selected tracks, no operations yet
+        Playlist.Tracks = Tracklist.Where(t => selectedTrackIds.Contains(t.Id.ToString())).ToList();
+
+        
+        foreach (var pt in Playlist.Tracks)
+        {
+            Console.WriteLine("Playlist.Tracks:" + pt.Title);
+        }
+    }
+
 }

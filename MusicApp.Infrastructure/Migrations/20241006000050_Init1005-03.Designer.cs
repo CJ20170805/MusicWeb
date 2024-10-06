@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MusicApp.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using MusicApp.Infrastructure.Data;
 namespace MusicApp.Infrastructure.Migrations
 {
     [DbContext(typeof(MusicDbContext))]
-    partial class MusicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241006000050_Init1005-03")]
+    partial class Init100503
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,7 +165,9 @@ namespace MusicApp.Infrastructure.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Title")
-                        .HasColumnType("longtext");
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -204,10 +209,17 @@ namespace MusicApp.Infrastructure.Migrations
                     b.Property<TimeSpan>("Duration")
                         .HasColumnType("time(6)");
 
+                    b.Property<Guid?>("PlaylistId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("Title")
-                        .HasColumnType("longtext");
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PlaylistId");
 
                     b.ToTable("Tracks");
                 });
@@ -367,9 +379,18 @@ namespace MusicApp.Infrastructure.Migrations
                     b.Navigation("Track");
                 });
 
+            modelBuilder.Entity("MusicApp.Domain.Entities.Track", b =>
+                {
+                    b.HasOne("MusicApp.Domain.Entities.Playlist", null)
+                        .WithMany("Tracks")
+                        .HasForeignKey("PlaylistId");
+                });
+
             modelBuilder.Entity("MusicApp.Domain.Entities.Playlist", b =>
                 {
                     b.Navigation("PlaylistTracks");
+
+                    b.Navigation("Tracks");
                 });
 
             modelBuilder.Entity("MusicApp.Domain.Entities.Track", b =>

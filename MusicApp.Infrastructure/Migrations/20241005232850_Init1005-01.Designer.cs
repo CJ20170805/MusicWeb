@@ -12,8 +12,8 @@ using MusicApp.Infrastructure.Data;
 namespace MusicApp.Infrastructure.Migrations
 {
     [DbContext(typeof(MusicDbContext))]
-    [Migration("20240928220800_PlaylistTrack")]
-    partial class PlaylistTrack
+    [Migration("20241005232850_Init1005-01")]
+    partial class Init100501
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -381,11 +381,9 @@ namespace MusicApp.Infrastructure.Migrations
 
             modelBuilder.Entity("MusicApp.Domain.Entities.Track", b =>
                 {
-                    b.HasOne("MusicApp.Domain.Entities.Playlist", "Playlist")
+                    b.HasOne("MusicApp.Domain.Entities.Playlist", null)
                         .WithMany("Tracks")
                         .HasForeignKey("PlaylistId");
-
-                    b.Navigation("Playlist");
                 });
 
             modelBuilder.Entity("MusicApp.Domain.Entities.Playlist", b =>

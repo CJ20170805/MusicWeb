@@ -12,8 +12,8 @@ using MusicApp.Infrastructure.Data;
 namespace MusicApp.Infrastructure.Migrations
 {
     [DbContext(typeof(MusicDbContext))]
-    [Migration("20240928223359_PlaylistTrack2")]
-    partial class PlaylistTrack2
+    [Migration("20241006001816_Init1005-04")]
+    partial class Init100504
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -165,9 +165,7 @@ namespace MusicApp.Infrastructure.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -194,7 +192,7 @@ namespace MusicApp.Infrastructure.Migrations
 
                     b.HasIndex("TrackId");
 
-                    b.ToTable("PlaylistTrack");
+                    b.ToTable("PlaylistTracks");
                 });
 
             modelBuilder.Entity("MusicApp.Domain.Entities.Track", b =>
@@ -213,9 +211,7 @@ namespace MusicApp.Infrastructure.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 

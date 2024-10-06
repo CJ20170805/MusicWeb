@@ -16,11 +16,12 @@ namespace MusicApp.Infrastructure.Repositories
 
         public async Task<Playlist> GetPlaylistByIdAsync(Guid playlistId)
         {
-            var playlist =  await _context.Playlists
-                .Include(p => p.Tracks)  // Include tracks if necessary
+            var playlist = await _context.Playlists
+                .Include(p => p.PlaylistTracks)
+                .ThenInclude(pt => pt.Track)
                 .FirstOrDefaultAsync(p => p.Id == playlistId);
-            
-            if(playlist == null)
+
+            if (playlist == null)
             {
                 throw new Exception("Playlist not found");
             }
@@ -30,14 +31,18 @@ namespace MusicApp.Infrastructure.Repositories
         public async Task<IEnumerable<Playlist>> GetAllPlaylistsByUserIdAsync(Guid userId)
         {
             return await _context.Playlists
+                .Include(p => p.PlaylistTracks)
+                .ThenInclude(pt => pt.Track)
+                .Include(p => p.User)
                 .Where(p => p.UserId == userId)
                 .ToListAsync();
         }
         public async Task<IEnumerable<Playlist>> GetAllPlaylistsAsync()
         {
             return await _context.Playlists
+                .Include(p => p.PlaylistTracks)
+                .ThenInclude(pt => pt.Track)
                 .Include(p => p.User)
-                .Include(p => p.Tracks)
                 .ToListAsync();
         }
 

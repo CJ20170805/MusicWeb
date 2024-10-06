@@ -70,6 +70,7 @@ namespace MusicApp.Application.Services
             }
 
             var playlist = _mapper.Map<Playlist>(playlistDTO);
+            
             await _playlistRepository.AddPlaylistAsync(playlist);
             return playlist.Id;
         }
@@ -92,6 +93,7 @@ namespace MusicApp.Application.Services
             return true;
         }
 
+
         public async Task<bool> DeletePlaylistAsync(Guid playlistId)
         {
             var existingPlaylist = await _playlistRepository.GetPlaylistByIdAsync(playlistId);
@@ -109,13 +111,21 @@ namespace MusicApp.Application.Services
             var playlists = await _playlistRepository.GetAllPlaylistsAsync();
             foreach (var playlist in playlists)
             {
-                _logger.LogInformation($"Playlist: {playlist.Title}, User: {playlist.User.Email}");
-                if(playlist.Tracks != null)
+                if (playlist != null)
                 {
-                    foreach (var track in playlist.Tracks)
+                    _logger.LogInformation($"Playlist: {playlist.Title}, User: {playlist.User?.Email}");
+                
+                  if(playlist.PlaylistTracks != null && playlist.PlaylistTracks.Any())
+                {
+                    foreach (var playlistTrack in playlist.PlaylistTracks)
                     {
-                        _logger.LogInformation($"Track: {track.Title}");
+                         var track = playlistTrack.Track; // Access the Track
+                        if (track != null) // Ensure the Track is not null
+                        {
+                            _logger.LogInformation($"Track: {track.Title}, Artist: {track.Artist}");
+                        }
                     }
+                }
                 }
             }
             return _mapper.Map<IEnumerable<PlaylistDTO>>(playlists);

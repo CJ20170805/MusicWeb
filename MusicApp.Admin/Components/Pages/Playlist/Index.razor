@@ -1,6 +1,8 @@
 ﻿@page "/playlists"
 @inject IDialogService DialogService
 @inject IPlaylistService PlaylistService
+@inject ITrackService TrackService
+@inject IUserService UserService
 
 <PageTitle>Playlist</PageTitle>
 
@@ -13,7 +15,7 @@
     <ColGroup>
         <col />
         <col />
-        <col style="width:18%;" />
+        <col style="width:28%;" />
     </ColGroup>
     <HeaderContent>
         <MudTh>
@@ -41,6 +43,8 @@
 
 @code {
     private IEnumerable<PlaylistDTO>? playlists;
+    private IEnumerable<UserDTO>? users;
+    private IEnumerable<TrackDTO> tracks = new List<TrackDTO>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,6 +54,8 @@
     private async Task LoadData()
     {
         playlists = await PlaylistService.GetPlaylistsAllAsync();
+        users = await UserService.GetUsersAllAsync();
+        tracks = await TrackService.GetTracksAllAsync();
     }
 
     private async Task handleCreate()
@@ -57,7 +63,9 @@
         var parameters = new DialogParameters
         {
             { nameof(PlaylistDialog.Playlist), new PlaylistDTO() }, 
-            { nameof(PlaylistDialog.isEditing), false } 
+            { nameof(PlaylistDialog.isEditing), false },
+            { nameof(PlaylistDialog.Userlist), users},
+            { nameof(PlaylistDialog.Tracklist), tracks},
         };
 
         var dialog = await DialogService.ShowAsync<PlaylistDialog>("Add", parameters);
@@ -71,10 +79,13 @@
 
     private async Task handleEdit(PlaylistDTO playlist)
     {
+        Console.WriteLine("Plssitt-handleEdit", playlist.Title);
         var parameters = new DialogParameters
         {
             { nameof(PlaylistDialog.Playlist), playlist },
-            { nameof(PlaylistDialog.isEditing), true }
+            { nameof(PlaylistDialog.isEditing), true },
+            { nameof(PlaylistDialog.Userlist), users},
+            { nameof(PlaylistDialog.Tracklist), tracks},
         };
 
         var dialog = await DialogService.ShowAsync<PlaylistDialog>("Edit", parameters);
