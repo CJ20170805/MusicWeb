@@ -25,19 +25,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PlaylistTracks, opt => opt.MapFrom(src => src.Tracks));
 
         CreateMap<PlaylistDTO, Playlist>()
-            .ConvertUsing(src => CreatePlaylist(src));
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.User, opt => opt.Ignore())
+            .ForMember(dest => dest.PlaylistTracks, opt => opt.Ignore())
+            .ForMember(dest => dest.User, opt => opt.Ignore());
 
         CreateMap<TrackDTO, PlaylistTrack>()
          .ConvertUsing(src => CreatePlaylistTrack(src));
-    }
-
-    private Playlist CreatePlaylist(PlaylistDTO dto)
-    {
-        if (string.IsNullOrWhiteSpace(dto.Title))
-        {
-            throw new ArgumentException("Title cannot be null or empty.", nameof(dto.Title));
-        }
-        return new Playlist(dto.Title, dto.UserId);
     }
 
     private PlaylistTrack CreatePlaylistTrack(TrackDTO src)

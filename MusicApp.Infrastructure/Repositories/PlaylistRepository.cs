@@ -55,6 +55,12 @@ namespace MusicApp.Infrastructure.Repositories
         public async Task UpdatePlaylistAsync(Playlist playlist)
         {
             var existingPlaylist = await _context.Playlists.FindAsync(playlist.Id);
+            foreach(var p in _context.Playlists)
+            {
+                // print playlist Id and  playlist.id
+                System.Console.WriteLine("Playlist:::::" + p.Title + "== " + p?.Id + "===" + playlist.Id);
+            }
+            System.Console.WriteLine("PPPPP" + existingPlaylist?.Title);
             if (existingPlaylist == null)
             {
                 throw new Exception("Playlist not found");

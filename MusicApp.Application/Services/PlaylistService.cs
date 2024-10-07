@@ -70,7 +70,7 @@ namespace MusicApp.Application.Services
             }
 
             var playlist = _mapper.Map<Playlist>(playlistDTO);
-            
+
             await _playlistRepository.AddPlaylistAsync(playlist);
             return playlist.Id;
         }
@@ -89,6 +89,7 @@ namespace MusicApp.Application.Services
             }
 
             var playlist = _mapper.Map<Playlist>(playlistDTO);
+            Console.WriteLine("DTO-ID" + playlistDTO.Id + "Playlist-ID" + playlist.Id);
             await _playlistRepository.UpdatePlaylistAsync(playlist);
             return true;
         }
