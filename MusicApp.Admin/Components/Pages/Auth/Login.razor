@@ -1,65 +1,50 @@
 ﻿@page "/Account/login"
 @attribute [AllowAnonymous]
 @rendermode InteractiveServer
-@using MusicApp.Domain.Entities
+@using FluentValidation
+@using MudBlazor
+@using MusicApp.Application.DTOs;
+@inject ISnackbar Snackbar
+@using MusicApp.Domain.Entities;
 @inject NavigationManager NavigationManager
 @inject SignInManager<User> SignInManager
 @inject ILogger<Login> Logger
+@inject IValidator<LoginDTO> LoginDTOValidator 
 
-<h3>Login</h3>
+<MudGrid class="mt-14"  Spacing="6" Justify="Justify.Center">
+    <MudItem>
+            <MudCard Style="width:400px;height:240px;">
+                <MudText Align="Align.Center" Typo="Typo.h6">Admin Login</MudText>
+                <MudForm Model="@loginModel" @ref="@form" ValidationDelay="0">
+                    <MudCardContent>
+                        <MudTextField @bind-Value="@loginModel.Username" 
+                                    For="@(() => loginModel.Username)" 
+                                    Immediate="true" 
+                                    Label="Username" />
+                        
+                        <MudTextField @bind-Value="@loginModel.Password" 
+                                    For="@(() => loginModel.Password)" 
+                                    Immediate="true" 
+                                    Label="Password" 
+                                    InputType="InputType.Password" />
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@(async () => await Submit())">Login</MudButton>
+                    </MudCardActions>
+                </MudForm>
 
-<EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="sds">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="form-group">
-        <label>Username</label>
-        <InputText Value="@loginModel.Username" 
-                   ValueChanged="@(value => 
-                   {
-                       loginModel.Username = value;
-                       Logger.LogInformation("Username changed to: {Username}", value);
-                   })" 
-                   ValueExpression="() => loginModel.Username" 
-                   class="form-control" />
-        <ValidationMessage For="@(() => loginModel.Username)" />
-    </div>
-
-    <div class="form-group">
-        <label>Password</label>
-        <InputText Value="@loginModel.Password" 
-                   ValueChanged="@(value => 
-                   {
-                       loginModel.Password = value;
-                       Logger.LogInformation("Password changed.");
-                   })" 
-                   ValueExpression="() => loginModel.Password" 
-                   type="password" 
-                   class="form-control" />
-        <ValidationMessage For="@(() => loginModel.Password)" />
-    </div>
-
-    <button type="submit" class="btn btn-primary" disabled="@isLoggingIn">Login</button>
-
-    @if (!string.IsNullOrWhiteSpace(loginErrorMessage))
-    {
-        <div class="alert alert-danger mt-3">@loginErrorMessage</div>
-    }
-</EditForm>
-
-<div>
-    <p>Debug: Username - @loginModel.Username</p>
-    <p>Debug: Password - @loginModel.Password</p>
-</div>
+                @if(!string.IsNullOrEmpty(loginErrorMessage))
+                {
+                    <MudAlert Severity="MudBlazor.Severity.Error">@loginErrorMessage</MudAlert>
+                }
+            </MudCard>
+    </MudItem>
+</MudGrid>
 
 @code {
-    private LoginDTO loginModel = new LoginDTO
-    {
-        Username = string.Empty,
-        Password = string.Empty
-    };
+    private MudForm? form;
 
-    private bool isLoggingIn = false;
+    private LoginDTO loginModel = new LoginDTO();
     private string? loginErrorMessage;
 
     protected override void OnInitialized() // Change to Task
@@ -70,49 +55,32 @@
         loginErrorMessage = ErrMsg;
     }
 
-    private void HandleLogin()
+
+    private async Task Submit()
     {
-        isLoggingIn = true;
-        loginErrorMessage = null;
-
-        try
+        if (form is null)
         {
-            Logger.LogInformation("Attempting login for user: {Username}", loginModel.Username);
+            throw new Exception("Form not found");
+        }
 
+        var validationResult = await LoginDTOValidator.ValidateAsync(loginModel);
+
+        if (validationResult.IsValid)
+        {
+            Console.WriteLine("Validation succeeded");
             string queryString = $"Username={loginModel.Username}&Password={loginModel.Password}";
 
             Console.WriteLine("queryString:::" + queryString);
 
             NavigationManager.NavigateTo($"/Account/set-cookie?{queryString}", forceLoad: true);
-
-            @* // Perform login
-            var signInResult = await SignInManager.PasswordSignInAsync(
-                loginModel.Username,
-                loginModel.Password,
-                isPersistent: false,
-                lockoutOnFailure: false);
-
-            if (signInResult.Succeeded)
+        }
+        else
+        {
+            foreach (var error in validationResult.Errors)
             {
-                Logger.LogInformation("User {Username} logged in successfully", loginModel.Username);
-
-                // Redirect after login
-                NavigationManager.NavigateTo("/", forceLoad: true);
+                Snackbar.Add(error.ErrorMessage, MudBlazor.Severity.Error);
             }
-            else
-            {
-                loginErrorMessage = "Invalid username or password. Please try again.";
-                Logger.LogWarning("Login failed for user: {Username}", loginModel.Username);
-            } *@
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "An error occurred during the login process.");
-            loginErrorMessage = "An unexpected error occurred. Please try again later.";
-        }
-        finally
-        {
-            isLoggingIn = false;
+            Console.WriteLine("Validation failed");
         }
     }
 }

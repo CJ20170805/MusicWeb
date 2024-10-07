@@ -44,7 +44,7 @@
 
         // Cookie handling can be done after a successful login if needed
         // The following is an example of how to set a cookie after checking for a token
-        var token = queryParams["token"];
+        @* var token = queryParams["token"];
         if (!string.IsNullOrWhiteSpace(token))
         {
             var httpContext = HttpContextAccessor.HttpContext;
@@ -53,7 +53,7 @@
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true, // Prevents JavaScript from accessing the cookie
-                    Expires = DateTimeOffset.UtcNow.AddDays(30), // Optional expiration
+                    Expires = DateTimeOffset.UtcNow.AddDays(1), // Optional expiration
                     Secure = true, // Set to true if using HTTPS
                 };
 
@@ -67,6 +67,6 @@
         else
         {
             NavigationManager.NavigateTo("/Account/login"); // Redirect back if no token
-        }
+        } *@
     }
 }

@@ -1,6 +1,12 @@
 ﻿@inherits LayoutComponentBase
+@using MusicApp.Admin.Services
+@using MusicApp.Domain.Entities
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+@inject SignInManager<User> SignInManager
+@inject ThemeService ThemeService
 
-<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+<MudThemeProvider Theme="@_theme" IsDarkMode="@ThemeService.IsDarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider
     FullWidth="true"
@@ -13,12 +19,12 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">Admin</MudText>
         <MudSpacer />
-        <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
+        <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@ToggleDarkMode" />
         <MudMenu Icon="@Icons.Material.Filled.MoreVert"
                 AriaLabel="Open user menu">
             <MudMenuItem>Profile</MudMenuItem>
             <MudMenuItem>My account</MudMenuItem>
-            <MudMenuItem>Logout</MudMenuItem>
+            <MudMenuItem OnClick="HandleLogout">Logout</MudMenuItem>
         </MudMenu>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
@@ -38,7 +44,6 @@
 
 @code {
     private bool _drawerOpen = true;
-    private bool _isDarkMode = true;
     private MudTheme? _theme = null;
 
     protected override void OnInitialized()
@@ -51,6 +56,16 @@
             PaletteDark = _darkPalette,
             LayoutProperties = new LayoutProperties()
         };
+
+       ThemeService.OnChange += async () => await InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleDarkMode() => ThemeService.ToggleDarkMode();
+
+    private void HandleLogout()
+    {
+        // Redirect to the login page or home page
+        NavigationManager.NavigateTo("/Account/logout", forceLoad: true);
     }
 
 
@@ -59,10 +74,6 @@
         _drawerOpen = !_drawerOpen;
     }
 
-    private void DarkModeToggle()
-    {
-        _isDarkMode = !_isDarkMode;
-    }
 
     private readonly PaletteLight _lightPalette = new()
     {
@@ -95,15 +106,9 @@
         GrayLighter = "#1e1e2d",
         Info = "#4a86ff",
         Success = "#3dcb6c",
-        Warning = "#ffb545",
-        Error = "#ff3f5f",
-        LinesDefault = "#33323e",
-        TableLines = "#33323e",
-        Divider = "#292838",
-        OverlayLight = "#1e1e2d80",
     };
 
-    public string DarkLightModeButtonIcon => _isDarkMode switch
+    public string DarkLightModeButtonIcon => ThemeService.IsDarkMode switch
     {
         true => Icons.Material.Rounded.AutoMode,
         false => Icons.Material.Outlined.DarkMode,

@@ -1,6 +1,8 @@
+using FluentValidation;
 using MusicApp.Admin.Components;
 using MusicApp.Application.Services;
 using MusicApp.Application.Interfaces;
+using MusicApp.Application.DTOs;
 using MusicApp.Infrastructure.Repositories;
 using MusicApp.Domain.Interfaces;
 using MusicApp.Infrastructure.Data;
@@ -14,6 +16,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
+using MusicApp.Admin.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +48,13 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddMudServices();
+
+builder.Services.AddSingleton<ThemeService>();
+
+
+// Register FluentValidation
+builder.Services.AddTransient<IValidator<LoginDTO>, LoginDTOValidator>();
+
 
 // AutoMapper setup
 builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);

@@ -1,0 +1,14 @@
+﻿@page "/Account/logout"
+@attribute [AllowAnonymous]
+@using MusicApp.Domain.Entities
+@inject NavigationManager NavigationManager
+@inject SignInManager<User> SignInManager
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Sign out the user
+        await SignInManager.SignOutAsync();
+
+        NavigationManager.NavigateTo("/Account/login", forceLoad: true);
+    }
+}
