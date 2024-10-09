@@ -42,14 +42,15 @@
 
 ## Tech Stack
 
-- **ASP.NET Core 8**: The core framework for building the application.
-- **DDD (Domain-Driven Design)**: Architectural pattern for domain logic.
-- **Entity Framework Core**: ORM for managing database access.
-- **Identity Framework**: Used for handling authentication and authorization.
-- **FluentValidation**: For input validation and ensuring proper data handling.
-- **MediatR**: Facilitates communication between various parts of the application using the CQRS pattern.
-- **Blazor**: Used for building the user interface for the admin section.
-- **Angular**: The framework for developing the frontend.
+- **ASP.NET Core 8**
+- **ASP.NET Identity**
+- **Entity Framework Core**
+- **JWT Bearer Authentication**
+- **FluentValidation**
+- **AutoMapper**
+- **MediatR**
+- **Blazor**
+- **Angular**
 
 ## Project Structure
 
