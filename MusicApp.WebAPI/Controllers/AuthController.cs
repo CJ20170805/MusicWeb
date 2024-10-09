@@ -7,18 +7,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MusicApp.Domain.Entities;
 using MusicApp.Application.DTOs;
+using MediatR;
+using MusicApp.Application.Commands;
 
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
+    private readonly IMediator _mediatR;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
     private readonly IConfiguration _configuration;
 
-    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
+    public AuthController(IMediator mediator ,UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
     {
+        _mediatR = mediator;
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
@@ -32,25 +36,25 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var user = new User
+        // var user = new User
+        // {
+        //     UserName = registerDTO.Email,
+        //     Email = registerDTO.Email,
+        // };
+        var command = new RegisterUserCommand
         {
-            UserName = registerDTO.Email,
+            UserName = registerDTO.UserName,
             Email = registerDTO.Email,
+            Password = registerDTO.Password
         };
 
-        var result = await _userManager.CreateAsync(user, registerDTO.Password);
-
-        if (result.Succeeded)
+        var result = await _mediatR.Send(command);
+        if (result)
         {
             return Ok(new { message = "User registered successfully!" });
         }
 
-        foreach (var error in result.Errors)
-        {
-            ModelState.AddModelError("", error.Description);
-        }
-
-        return BadRequest(ModelState);
+        return BadRequest(new { message = "Failed to register user." });
     }
 
     [HttpPost("login")]

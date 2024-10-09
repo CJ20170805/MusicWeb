@@ -12,6 +12,8 @@ using MusicApp.Infrastructure.Repositories;
 using MusicApp.Domain.Interfaces;
 using System.Security.Cryptography;
 using MusicApp.Application.Mappings;
+using MusicApp.Application.Handlers;
+using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +34,11 @@ builder.Services.AddControllers();
 // builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
+// Register MediatR services
+builder.Services.AddMediatR(typeof(RegisterUserCommandHandler).Assembly);
+
+// DI for Email service
+builder.Services.AddScoped<IEmailService, EmailServices>();
 
 // DI for Playlist and Track services
 builder.Services.AddScoped<IPlaylistService, PlaylistService>();
