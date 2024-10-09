@@ -16,6 +16,7 @@ public class MusicDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<Playlist> Playlists { get; set; }
     public DbSet<Track> Tracks { get; set; }
     public DbSet<PlaylistTrack> PlaylistTracks { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,5 +36,10 @@ public class MusicDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .HasOne(pt => pt.Track)
             .WithMany(t => t.PlaylistTracks)
             .HasForeignKey(pt => pt.TrackId);
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.User) 
+            .WithMany(u => u.Notifications) 
+            .HasForeignKey(n => n.UserId); 
     }
 }

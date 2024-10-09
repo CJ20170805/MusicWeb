@@ -40,6 +40,10 @@ builder.Services.AddMediatR(typeof(RegisterUserCommandHandler).Assembly);
 // DI for Email service
 builder.Services.AddScoped<IEmailService, EmailServices>();
 
+// DI for Notification service
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
 // DI for Playlist and Track services
 builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 builder.Services.AddScoped<ITrackService, TrackService>();

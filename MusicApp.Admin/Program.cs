@@ -51,7 +51,6 @@ builder.Services.AddMudServices();
 
 builder.Services.AddSingleton<ThemeService>();
 
-
 // Register FluentValidation
 builder.Services.AddTransient<IValidator<LoginDTO>, LoginDTOValidator>();
 
@@ -72,15 +71,19 @@ builder.Services.AddHttpClient("API", client =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+
 // Dependency Injection for application services
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 // Dependency Injection for repository services
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<ITrackRepository, TrackRepository>();
 builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 
 // MySQL Database setup
 var serverVersion = new MySqlServerVersion(new Version(8, 2, 0));
