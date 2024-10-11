@@ -9,6 +9,7 @@
 @using MusicApp.Application.DTOs
 @using MusicApp.Application.Services
 @using MusicApp.Application.Interfaces
+@using MusicApp.Domain.Entities
 @using Microsoft.AspNetCore.Identity
 @using MudBlazor
 @using System.IdentityModel.Tokens.Jwt;
@@ -17,5 +18,9 @@
 @using Microsoft.AspNetCore.Mvc;
 @using Microsoft.IdentityModel.Tokens;
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using MediatR
+@using MusicApp.Application.Commands
+@using MusicApp.Application.Events
 @attribute [Authorize]
 

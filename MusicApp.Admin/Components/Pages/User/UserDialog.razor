@@ -1,82 +1,95 @@
 ﻿@using MusicApp.Domain.Entities
+@using System.ComponentModel.DataAnnotations
 @inject IUserService UserService
 @inject IUserRoleService UserRoleService
 
-<MudDialog>
-    <TitleContent>
-        <MudText Typo="Typo.h6">
+<EditForm Model="@RegisterDTO" OnValidSubmit="HandleCreate">
+    <DataAnnotationsValidator />
+    <MudDialog>
+        <TitleContent>
+            <MudText Typo="Typo.h6">
+                @if (isDeleting)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Delete" Class="mr-3 mb-n1" /> @("Delete User")
+                }
+                else if (isEditing)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" /> @("Edit User")
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3 mb-n1" /> @("Add New User")
+                }
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            @if (!isDeleting)
+            {
+                @if (!isEditing)
+                {
+                    <MudTextField @bind-Value="@RegisterDTO.UserName" Label="UserName" OnlyValidateIfDirty="true"
+                        For="@(() => RegisterDTO.UserName)" />
+
+
+                    <MudTextField @bind-Value="@RegisterDTO.Email" Label="Email" OnlyValidateIfDirty="true"
+                        For="@(() => RegisterDTO.Email)" />
+
+
+                    <MudTextField @bind-Value="@RegisterDTO.Password" Label="Password" OnlyValidateIfDirty="true"
+                        Type="password" For="@(() => RegisterDTO.Password)" />
+
+
+                    <MudTextField @bind-Value="@RegisterDTO.ConfirmPassword" Label="Confirm Password" OnlyValidateIfDirty="true"
+                        Type="password" For="@(() => RegisterDTO.ConfirmPassword)" />
+
+                }
+                else
+                {
+                    <MudTextField @bind-Value="@User.UserName" Label="UserName" ReadOnly="false" />
+                    <MudTextField @bind-Value="@User.Email" Label="Email" ReadOnly="false" />
+                    <MudTextField @bind-Value="@User.IsDeleted" Label="IsDeleted" ReadOnly="false" />
+                    <MudTextField @bind-Value="@User.CreatedAt" Label="CreatedAt" ReadOnly="false" />
+                    <MudTextField @bind-Value="@User.UpdatedAt" Label="UpdatedAt" ReadOnly="false" />
+
+                }
+
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
+                        MultiSelection="true" SelectedValues="SelectedRoles" SelectedValuesChanged="OnSelectedValuesChanged"
+                        T="string" Label="Roles" AdornmentIcon="@Icons.Material.Filled.Search"
+                        AnchorOrigin="Origin.BottomCenter">
+
+                        @foreach (var role in RolesList)
+                        {
+                            <MudSelectItem T="string" Value="@role.Name">@role.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+            }
+            else
+            {
+                <MudText>Are you sure you want to delete the user "<strong>@User.UserName</strong>"?</MudText>
+            }
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+
             @if (isDeleting)
             {
-                <MudIcon Icon="@Icons.Material.Filled.Delete" Class="mr-3 mb-n1"/> @("Delete User")
-            }
-            else if (isEditing)
-            {
-                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1"/> @("Edit User")
+                <MudButton Color="Color.Error" OnClick="DeleteUser">Delete</MudButton>
             }
             else
             {
-                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3 mb-n1"/> @("Add New User")
-            }
-        </MudText>
-    </TitleContent>
-    <DialogContent>
-        @if (!isDeleting)
-        {
-            <MudTextField @bind-Value="@User.UserName" Label="UserName" ReadOnly="false"/>
-            <MudTextField @bind-Value="@User.Email" Label="Email" ReadOnly="false"/>
-            <MudTextField @bind-Value="@User.IsDeleted" Label="IsDeleted" ReadOnly="false"/>
-            <MudTextField @bind-Value="@User.CreatedAt" Label="CreatedAt" ReadOnly="false"/>
-            <MudTextField @bind-Value="@User.UpdatedAt" Label="UpdatedAt" ReadOnly="false"/>
-
-             <!-- Role Selection Dropdown -->
-            @* <MudSelect Label="Select Roles" @bind-SelectedValues="SelectedRoles" MultiSelection="true">
-                @foreach (var role in AvailableRoles)
+                if (isEditing)
                 {
-                    <MudSelectItem Value="@role">@role</MudSelectItem>
+                    <MudButton Color="Color.Primary" OnClick="Save">@("Save")</MudButton>
                 }
-            </MudSelect> *@
-
-                <MudSelect 
-                    MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
-                    MultiSelection="true"
-                    SelectedValues="SelectedRoles"
-                    SelectedValuesChanged="OnSelectedValuesChanged"
-                    T="string" 
-                    Label="Roles"
-                    AdornmentIcon="@Icons.Material.Filled.Search" 
-                    AnchorOrigin="Origin.BottomCenter">
-
-                    @foreach (var role in RolesList)
-                    {
-                        <MudSelectItem T="string" Value="@role.Name">@role.Name</MudSelectItem>
-                    }
-                </MudSelect>
-        }
-        else
-        {
-            <MudText>Are you sure you want to delete the user "<strong>@User.UserName</strong>"?</MudText>
-        }
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        
-        @if (isDeleting)
-        {
-            <MudButton Color="Color.Error" OnClick="DeleteUser">Delete</MudButton>
-        }
-        else
-        {
-            if (isEditing)
-            {
-                <MudButton Color="Color.Primary" OnClick="Save">@("Save")</MudButton>
+                else
+                {
+                    <MudButton Color="Color.Primary" ButtonType="ButtonType.Submit">@("Create")</MudButton>
+                }
             }
-            else
-            {
-                <MudButton Color="Color.Primary" OnClick="Save">@("Create")</MudButton>
-            }
-        }
-    </DialogActions>
-</MudDialog>
+        </DialogActions>
+    </MudDialog>
+</EditForm>
 
 @code {
     [CascadingParameter]
@@ -85,29 +98,41 @@
     [Parameter]
     public UserDTO User { get; set; } = new UserDTO();
 
+    private RegisterDTO RegisterDTO { get; set; } = new RegisterDTO
+        {
+            UserName = string.Empty,
+            Email = string.Empty,
+            Password = string.Empty,
+            ConfirmPassword = string.Empty
+        };
+
     [Parameter]
     public bool isEditing { get; set; }
 
     [Parameter]
-    public bool isDeleting { get; set; } 
+    public bool isDeleting { get; set; }
+
     [Parameter]
-    public List<RoleDTO> RolesList { get; set; } = new List<RoleDTO>();
+    public IEnumerable<RoleDTO> RolesList { get; set; } = new List<RoleDTO>();
     private List<string> SelectedRoles { get; set; } = new List<string>();
 
     private void Cancel() => MudDialog?.Cancel();
 
     protected override void OnInitialized()
     {
+        // SelectedRoles = User.UserRoles;
         var userRoles = User.UserRoles;
-        foreach(var userrole in userRoles)
+        foreach (var userrole in userRoles)
         {
-            foreach(var role in RolesList)
+
+             SelectedRoles.Add(userrole);
+            @* foreach (var role in RolesList)
             {
-                if(userrole.RoleId == role.Id)
+                if (userrole == role.Name)
                 {
                     SelectedRoles.Add(role.Name);
-                } 
-            }
+                }
+            } *@
         }
 
     }
@@ -118,63 +143,81 @@
             Console.WriteLine("RRR1" + User.Id + string.Join(", ", SelectedRoles));
             try
             {
-                await UserService.UpdateUserSAsync(User); // Update 
-                await UserRoleService.AssignRoleToUserAsync(User.Id, SelectedRoles); 
+                await UserService.UpdateUserSAsync(User); // Update
+                await UserRoleService.AssignRoleToUserAsync(User.Id, SelectedRoles);
             }
-            catch(Exception err)
+            catch (Exception err)
             {
                 Console.WriteLine("EDDDDD" + err);
             }
 
+            MudDialog?.Close(DialogResult.Ok(User.Id));
+
         }
-        else
+
+    }
+
+    private async Task HandleCreate()
+    {
         {
-          //  await UserService.CreateUserAsync(User); // Create 
+            if (!string.IsNullOrEmpty(RegisterDTO.UserName) && !string.IsNullOrEmpty(RegisterDTO.Email))
+            {
+
+
+                @* var registerDTO = new RegisterDTO
+                {
+                UserName = RegisterDTO.UserName,
+                Email = RegisterDTO.Email,
+                Password = RegisterDTO.Password,
+                ConfirmPassword = RegisterDTO.ConfirmPassword
+                };
+
+                var result = await UserService.RegisterUserAsync(registerDTO);
+
+                if (result)
+                {
+                MudDialog?.Close(DialogResult.Ok(User.Id));
+                }
+                else
+                {
+                Console.WriteLine("User registration failed.");
+                } *@
+
+                try
+                {
+
+                    var ruser = await UserService.CreateUserSAsync(RegisterDTO, RegisterDTO.Password); // Create
+                    if(ruser != null)
+                    {
+                        Console.WriteLine("RUSER" + ruser.Id);
+                        await UserRoleService.AssignRoleToUserAsync(ruser.Id, SelectedRoles);
+                        MudDialog?.Close(DialogResult.Ok(ruser.Id));
+                    }
+
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine("Error during creation: " + err);
+                }
+
+            }
         }
-        MudDialog?.Close(DialogResult.Ok(User.Id)); // Close dialog
     }
 
     private void OnSelectedValuesChanged(IEnumerable<string> selectedValues) // Accept IEnumerable<string>
     {
         @* foreach (var sv in selectedValues)
         {
-            Console.WriteLine("selectedValues:" + sv);
+        Console.WriteLine("selectedValues:" + sv);
         } *@
-       // Update selectedTrackIds with the newly selected values
+
+        // Update selectedTrackIds with the newly selected values
         SelectedRoles = selectedValues.ToList();
 
-        var newUserRoles = new List<UserRoles>();
-
-        foreach (var roleName in SelectedRoles)
-        {
-            // Find the corresponding RoleDTO by name
-            var role = RolesList.FirstOrDefault(r => r.Name == roleName);
-            if (role != null)
-            {
-                // Add new UserRoles instances to the new list
-                newUserRoles.Add(new UserRoles
-                {
-                    UserId = User.Id,
-                    RoleId = role.Id
-                });
-            }
-        }
-
-        // Assign the new roles to the UserDTO's UserRoles property
-        User.UserRoles = newUserRoles;
-
-
-        foreach (var sv in SelectedRoles)
-        {
-            Console.WriteLine("SelectedRoles:" + sv);
-        }
-        
-        // Just update the UI to reflect the currently selected tracks, no operations yet
-        //Playlist.Tracks = Tracklist.Where(t => selectedTrackIds.Contains(t.Id.ToString())).ToList();
-
+        //User.UserRoles = SelectedRoles;
     }
 
-     private string GetMultiSelectionText(List<string> selectedValues)
+    private string GetMultiSelectionText(List<string> selectedValues)
     {
         return string.Join(", ", selectedValues);
     }
@@ -182,7 +225,7 @@
     // Delete user
     private async Task DeleteUser()
     {
-        await UserService.DeleteUserSAsync(User.Id); 
-        MudDialog?.Close(DialogResult.Ok(User.Id)); 
+        await UserService.DeleteUserSAsync(User.Id);
+        MudDialog?.Close(DialogResult.Ok(User.Id));
     }
 }

@@ -8,7 +8,7 @@ public class RegisterDTO
 {
     [Required]
     [StringLength(20, MinimumLength = 2)]
-    public required string UserName { get; set; }
+    public required string UserName { get; set; } 
     [Required]
     [EmailAddress]
     public required string Email { get; set; }

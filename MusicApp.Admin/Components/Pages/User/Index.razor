@@ -1,10 +1,24 @@
 ﻿@page "/users"
+@* @attribute [Authorize(Policy = "AdminPolicy")] *@
 @inject IUserService UserService
 @inject IDialogService DialogService
 @inject IUserRoleService UserRoleService
 
-
 <PageTitle>User</PageTitle>
+
+@* <AuthorizeView>
+    <Authorized>
+        <!-- This block will only render if the user is authorized -->
+        <MudTable Items="@users" Hover="true" SortLabel="Sort By">
+            <!-- Your table content goes here -->
+            <h1>Authorized</h1>
+        </MudTable>
+    </Authorized>
+    <NotAuthorized>
+        <!-- This block will render if the user is not authorized -->
+        <p>You are not authorized to view this page.</p>
+    </NotAuthorized>
+</AuthorizeView> *@
 
 <MudTable Items="@users" Hover="true" SortLabel="Sort By">
     <ToolBarContent>
@@ -39,7 +53,7 @@
         </MudTh>
         <MudTh>
             <MudTableSortLabel
-                SortBy="new Func<UserDTO, object>(x=> x.UserRoles?.FirstOrDefault()?.RoleId ?? Guid.Empty)">Roles
+                SortBy="new Func<UserDTO, object>(x=> x.UserRoles?.FirstOrDefault() ?? string.Empty)">Roles
             </MudTableSortLabel>
         </MudTh>
         <MudTh></MudTh>
@@ -55,9 +69,9 @@
             {
                 @foreach (var userRole in context.UserRoles)
                 {
-                    @if (roleIdToRoleName.TryGetValue(userRole.RoleId, out var roleName))
+                    @if (!string.IsNullOrEmpty(userRole))
                     {
-                        <span>@roleName</span>
+                        <span>@userRole</span>
 
                         <br />
                     }
@@ -89,7 +103,7 @@
 @code {
     private IEnumerable<UserDTO>? users;
     private IEnumerable<RoleDTO> RolesList { get; set; } = new List<RoleDTO>();
-    private Dictionary<Guid, string> roleIdToRoleName = new();
+    //private Dictionary<Guid, string> roleIdToRoleName = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,18 +116,13 @@
 
         var roles = await UserRoleService.GetAllRolesAsync();
         RolesList = roles;
-        roleIdToRoleName = roles.ToDictionary(role => role.Id, role => role.Name);
+
+        @* roleIdToRoleName = roles.ToDictionary(role => role.Id, role => role.Name); *@
 
         foreach (var u in users)
         {
-            foreach (var ur in u.UserRoles)
-            {
-                Console.WriteLine("User Role ID: " + ur.RoleId);
-                if (roleIdToRoleName.TryGetValue(ur.RoleId, out var roleName))
-                {
-                    Console.WriteLine("Matched Role Name: " + roleName);
-                }
-            }
+            var uroles = await UserRoleService.GetUserRolesAsync(u.Id);
+            u.UserRoles = uroles;
         }
     }
 
@@ -122,7 +131,9 @@
         var parameters = new DialogParameters
         {
             { nameof(UserDialog.User), new UserDTO() },
-            { nameof(UserDialog.isEditing), false }
+            { nameof(UserDialog.isDeleting), false },
+            { nameof(UserDialog.isEditing), false },
+            { nameof(UserDialog.RolesList), RolesList}
         };
 
         var dialog = await DialogService.ShowAsync<UserDialog>("Add", parameters);

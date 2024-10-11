@@ -43,23 +43,7 @@ public class MusicDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .HasForeignKey(n => n.UserId);
 
         
-           // Configure the UserRoles
-            // modelBuilder.Entity<UserRoles>()
-            //     .ToTable("UserRoles") // Use the correct table name if needed
-            //     .HasKey(ur => new { ur.UserId, ur.RoleId });
-
-            // Configure relationships
-            modelBuilder.Entity<UserRoles>()
-                .HasOne(ur => ur.User)
-                .WithMany(u => u.UserRoles) // No navigation property on User
-                .HasForeignKey(ur => ur.UserId)
-                .OnDelete(DeleteBehavior.Cascade); // Configure the delete behavior as needed
-
-            modelBuilder.Entity<UserRoles>()
-                .HasOne(ur => ur.Role)
-                .WithMany(u => u.UserRoles) // No navigation property on Role
-                .HasForeignKey(ur => ur.RoleId)
-                .OnDelete(DeleteBehavior.Cascade); 
+        
 
     }
 }

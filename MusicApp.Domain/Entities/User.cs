@@ -11,7 +11,8 @@ public class User: IdentityUser<Guid>
 
     public virtual ICollection<Playlist> Playlists { get; private set; } 
     public virtual ICollection<Notification> Notifications { get; private set; }
-    public virtual ICollection<UserRoles> UserRoles { get; private set; }
+    
+    //public virtual ICollection<UserRoles> UserRoles { get; private set; }
     public User()
     {
         // Initialize properties
@@ -20,27 +21,7 @@ public class User: IdentityUser<Guid>
         IsDeleted = false;
         Playlists = new List<Playlist>();
         Notifications = new List<Notification>();
-        UserRoles = new List<UserRoles>();
     }
-
-    public void AddUserRole(UserRoles userRole)
-    {
-        // Add the new role to the collection
-        UserRoles.Add(userRole);
-    }
-
-    public void RemoveUserRole(UserRoles userRole)
-    {
-        // Remove the role from the collection if it exists
-        UserRoles.Remove(userRole);
-    }
-
-    public void ClearUserRoles()
-    {
-        // Clear all roles from the collection
-        UserRoles.Clear();
-    }
-
 
     public void SoftDelete()
     {

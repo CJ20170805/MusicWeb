@@ -11,6 +11,6 @@ public class UserDTO
     public bool IsDeleted { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public IEnumerable<UserRoles> UserRoles { get; set; } = new List<UserRoles>();
+    public IEnumerable<string> UserRoles { get; set; } = new List<string>();
 
 }

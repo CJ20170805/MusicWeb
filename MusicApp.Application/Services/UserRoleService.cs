@@ -24,7 +24,7 @@ public class UserRoleService : IUserRoleService
         {
             Id = role.Id,
             Name = role.Name ?? string.Empty
-        }).ToList();
+        });
     }
 
     public async Task<string> GetRoleNameByIdAsync(Guid roleId)
@@ -88,6 +88,19 @@ public class UserRoleService : IUserRoleService
 
         Console.WriteLine($"Successfully updated roles for user: {user.UserName}");
 
+    }
+
+    public async Task<IEnumerable<string>> GetUserRolesAsync(Guid userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) throw new InvalidOperationException("User not found");
+
+        var roles = await _userManager.GetRolesAsync(user);
+        foreach (var role in roles)
+        {
+            Console.WriteLine($"Role888: {role}");
+        }
+        return roles.ToList();
     }
 }
 

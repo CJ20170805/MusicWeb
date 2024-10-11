@@ -8,4 +8,5 @@ public interface IUserRoleService
     Task<IEnumerable<RoleDTO>> GetAllRolesAsync();
     Task AssignRoleToUserAsync(Guid userId, IEnumerable<string> roles);
     Task<string> GetRoleNameByIdAsync(Guid roleId);
+    Task<IEnumerable<string>> GetUserRolesAsync(Guid userId);
 }

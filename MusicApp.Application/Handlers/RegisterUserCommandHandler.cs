@@ -31,6 +31,14 @@ public class RegisterUserCommandHandler: IRequestHandler<RegisterUserCommand, bo
             Email = request.Email,
         };
 
+        Console.WriteLine("RegisterUserCommandHandler: " + user.UserName + " " + user.Email + request.Password);
+        // foreach (var role in user.UserRoles)
+        // {
+        //     Console.WriteLine("UserRoles: " + role.RoleId);
+        // }
+
+        // user.UserRoles.Clear();
+
         var result = await _userManager.CreateAsync(user, request.Password);
 
         if (result.Succeeded)

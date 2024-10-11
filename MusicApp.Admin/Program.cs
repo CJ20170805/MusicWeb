@@ -17,6 +17,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
 using MusicApp.Admin.Services;
+using MusicApp.Application.Commands;
+using MusicApp.Application.Handlers;
+using MediatR;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -72,6 +76,12 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 
+// Register MediatR services
+builder.Services.AddMediatR(typeof(RegisterUserCommandHandler).Assembly);
+
+// DI for Email service
+builder.Services.AddScoped<IEmailService, EmailServices>();
+
 // Dependency Injection for application services
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITrackService, TrackService>();
@@ -84,6 +94,12 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<ITrackRepository, TrackRepository>();
 builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
+});
 
 
 // MySQL Database setup
