@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MusicApp.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using MusicApp.Infrastructure.Data;
 namespace MusicApp.Infrastructure.Migrations
 {
     [DbContext(typeof(MusicDbContext))]
-    partial class MusicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241010173709_AddUserRolesRelationship2")]
+    partial class AddUserRolesRelationship2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,11 +35,6 @@ namespace MusicApp.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("varchar(21)");
-
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
@@ -52,10 +50,6 @@ namespace MusicApp.Infrastructure.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasDiscriminator().HasValue("IdentityRole<Guid>");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -331,19 +325,17 @@ namespace MusicApp.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("MusicApp.Domain.Entities.Role", b =>
-                {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>");
-
-                    b.HasDiscriminator().HasValue("Role");
-                });
-
             modelBuilder.Entity("MusicApp.Domain.Entities.UserRoles", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>");
 
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UserId1")
+                        .HasColumnType("char(36)");
+
+                    b.HasIndex("UserId1");
 
                     b.HasDiscriminator().HasValue("UserRoles");
                 });
@@ -380,6 +372,12 @@ namespace MusicApp.Infrastructure.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MusicApp.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -436,21 +434,9 @@ namespace MusicApp.Infrastructure.Migrations
 
             modelBuilder.Entity("MusicApp.Domain.Entities.UserRoles", b =>
                 {
-                    b.HasOne("MusicApp.Domain.Entities.Role", "Role")
+                    b.HasOne("MusicApp.Domain.Entities.User", null)
                         .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MusicApp.Domain.Entities.User", "User")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
+                        .HasForeignKey("UserId1");
                 });
 
             modelBuilder.Entity("MusicApp.Domain.Entities.Playlist", b =>
@@ -469,11 +455,6 @@ namespace MusicApp.Infrastructure.Migrations
 
                     b.Navigation("Playlists");
 
-                    b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("MusicApp.Domain.Entities.Role", b =>
-                {
                     b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618

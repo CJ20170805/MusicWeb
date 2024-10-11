@@ -1,4 +1,6 @@
-﻿@inject IUserService UserService
+﻿@using MusicApp.Domain.Entities
+@inject IUserService UserService
+@inject IUserRoleService UserRoleService
 
 <MudDialog>
     <TitleContent>
@@ -23,8 +25,32 @@
             <MudTextField @bind-Value="@User.UserName" Label="UserName" ReadOnly="false"/>
             <MudTextField @bind-Value="@User.Email" Label="Email" ReadOnly="false"/>
             <MudTextField @bind-Value="@User.IsDeleted" Label="IsDeleted" ReadOnly="false"/>
-             <MudTextField @bind-Value="@User.CreatedAt" Label="CreatedAt" ReadOnly="false"/>
-              <MudTextField @bind-Value="@User.UpdatedAt" Label="UpdatedAt" ReadOnly="false"/>
+            <MudTextField @bind-Value="@User.CreatedAt" Label="CreatedAt" ReadOnly="false"/>
+            <MudTextField @bind-Value="@User.UpdatedAt" Label="UpdatedAt" ReadOnly="false"/>
+
+             <!-- Role Selection Dropdown -->
+            @* <MudSelect Label="Select Roles" @bind-SelectedValues="SelectedRoles" MultiSelection="true">
+                @foreach (var role in AvailableRoles)
+                {
+                    <MudSelectItem Value="@role">@role</MudSelectItem>
+                }
+            </MudSelect> *@
+
+                <MudSelect 
+                    MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
+                    MultiSelection="true"
+                    SelectedValues="SelectedRoles"
+                    SelectedValuesChanged="OnSelectedValuesChanged"
+                    T="string" 
+                    Label="Roles"
+                    AdornmentIcon="@Icons.Material.Filled.Search" 
+                    AnchorOrigin="Origin.BottomCenter">
+
+                    @foreach (var role in RolesList)
+                    {
+                        <MudSelectItem T="string" Value="@role.Name">@role.Name</MudSelectItem>
+                    }
+                </MudSelect>
         }
         else
         {
@@ -64,19 +90,93 @@
 
     [Parameter]
     public bool isDeleting { get; set; } 
+    [Parameter]
+    public List<RoleDTO> RolesList { get; set; } = new List<RoleDTO>();
+    private List<string> SelectedRoles { get; set; } = new List<string>();
 
     private void Cancel() => MudDialog?.Cancel();
+
+    protected override void OnInitialized()
+    {
+        var userRoles = User.UserRoles;
+        foreach(var userrole in userRoles)
+        {
+            foreach(var role in RolesList)
+            {
+                if(userrole.RoleId == role.Id)
+                {
+                    SelectedRoles.Add(role.Name);
+                } 
+            }
+        }
+
+    }
     private async Task Save()
     {
         if (isEditing)
         {
-            await UserService.UpdateUserSAsync(User); // Update 
+            Console.WriteLine("RRR1" + User.Id + string.Join(", ", SelectedRoles));
+            try
+            {
+                await UserService.UpdateUserSAsync(User); // Update 
+                await UserRoleService.AssignRoleToUserAsync(User.Id, SelectedRoles); 
+            }
+            catch(Exception err)
+            {
+                Console.WriteLine("EDDDDD" + err);
+            }
+
         }
         else
         {
           //  await UserService.CreateUserAsync(User); // Create 
         }
         MudDialog?.Close(DialogResult.Ok(User.Id)); // Close dialog
+    }
+
+    private void OnSelectedValuesChanged(IEnumerable<string> selectedValues) // Accept IEnumerable<string>
+    {
+        @* foreach (var sv in selectedValues)
+        {
+            Console.WriteLine("selectedValues:" + sv);
+        } *@
+       // Update selectedTrackIds with the newly selected values
+        SelectedRoles = selectedValues.ToList();
+
+        var newUserRoles = new List<UserRoles>();
+
+        foreach (var roleName in SelectedRoles)
+        {
+            // Find the corresponding RoleDTO by name
+            var role = RolesList.FirstOrDefault(r => r.Name == roleName);
+            if (role != null)
+            {
+                // Add new UserRoles instances to the new list
+                newUserRoles.Add(new UserRoles
+                {
+                    UserId = User.Id,
+                    RoleId = role.Id
+                });
+            }
+        }
+
+        // Assign the new roles to the UserDTO's UserRoles property
+        User.UserRoles = newUserRoles;
+
+
+        foreach (var sv in SelectedRoles)
+        {
+            Console.WriteLine("SelectedRoles:" + sv);
+        }
+        
+        // Just update the UI to reflect the currently selected tracks, no operations yet
+        //Playlist.Tracks = Tracklist.Where(t => selectedTrackIds.Contains(t.Id.ToString())).ToList();
+
+    }
+
+     private string GetMultiSelectionText(List<string> selectedValues)
+    {
+        return string.Join(", ", selectedValues);
     }
 
     // Delete user

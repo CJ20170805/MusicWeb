@@ -1,6 +1,7 @@
 ﻿@page "/users"
 @inject IUserService UserService
 @inject IDialogService DialogService
+@inject IUserRoleService UserRoleService
 
 
 <PageTitle>User</PageTitle>
@@ -36,6 +37,11 @@
         <MudTh>
             <MudTableSortLabel SortBy="new Func<UserDTO, object>(x=>x.UpdatedAt)">UpdatedAt</MudTableSortLabel>
         </MudTh>
+        <MudTh>
+            <MudTableSortLabel
+                SortBy="new Func<UserDTO, object>(x=> x.UserRoles?.FirstOrDefault()?.RoleId ?? Guid.Empty)">Roles
+            </MudTableSortLabel>
+        </MudTh>
         <MudTh></MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -44,9 +50,34 @@
         <MudTd DataLabel="IsDeleted">@context.IsDeleted</MudTd>
         <MudTd DataLabel="CreatedAt">@context.CreatedAt</MudTd>
         <MudTd DataLabel="UpdatedAt">@context.UpdatedAt</MudTd>
+        <MudTd DataLabel="Roles">
+            @if (context.UserRoles != null && context.UserRoles.Any())
+            {
+                @foreach (var userRole in context.UserRoles)
+                {
+                    @if (roleIdToRoleName.TryGetValue(userRole.RoleId, out var roleName))
+                    {
+                        <span>@roleName</span>
+
+                        <br />
+                    }
+                    else
+                    {
+                        <span>Unknown Role</span>
+
+                        <br />
+                    }
+                }
+            }
+            else
+            {
+                <span>No roles</span>
+            }
+        </MudTd>
         <MudTd>
             <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="()=> handleEdit(context)">Edit</MudButton>
-            <MudButton class="ml-2" Variant="Variant.Outlined" Size="Size.Small" OnClick="()=>handleDelete(context)" Color="Color.Secondary">Delete
+            <MudButton class="ml-2" Variant="Variant.Outlined" Size="Size.Small" OnClick="()=>handleDelete(context)"
+                Color="Color.Secondary">Delete
             </MudButton>
         </MudTd>
     </RowTemplate>
@@ -57,6 +88,8 @@
 
 @code {
     private IEnumerable<UserDTO>? users;
+    private IEnumerable<RoleDTO> RolesList { get; set; } = new List<RoleDTO>();
+    private Dictionary<Guid, string> roleIdToRoleName = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,14 +99,30 @@
     private async Task LoadData()
     {
         users = await UserService.GetUsersAllAsync();
+
+        var roles = await UserRoleService.GetAllRolesAsync();
+        RolesList = roles;
+        roleIdToRoleName = roles.ToDictionary(role => role.Id, role => role.Name);
+
+        foreach (var u in users)
+        {
+            foreach (var ur in u.UserRoles)
+            {
+                Console.WriteLine("User Role ID: " + ur.RoleId);
+                if (roleIdToRoleName.TryGetValue(ur.RoleId, out var roleName))
+                {
+                    Console.WriteLine("Matched Role Name: " + roleName);
+                }
+            }
+        }
     }
 
     private async Task handleCreate()
     {
         var parameters = new DialogParameters
         {
-            { nameof(UserDialog.User), new UserDTO() }, 
-            { nameof(UserDialog.isEditing), false } 
+            { nameof(UserDialog.User), new UserDTO() },
+            { nameof(UserDialog.isEditing), false }
         };
 
         var dialog = await DialogService.ShowAsync<UserDialog>("Add", parameters);
@@ -81,7 +130,7 @@
 
         if (result != null && !result.Canceled)
         {
-             await LoadData();
+            await LoadData();
         }
     }
 
@@ -90,7 +139,8 @@
         var parameters = new DialogParameters
         {
             { nameof(UserDialog.User), user },
-            { nameof(UserDialog.isEditing), true }
+            { nameof(UserDialog.isEditing), true },
+            { nameof(UserDialog.RolesList), RolesList}
         };
 
         var dialog = await DialogService.ShowAsync<UserDialog>("Edit", parameters);
@@ -98,18 +148,18 @@
 
         if (result != null && !result.Canceled)
         {
-             await LoadData();
+            await LoadData();
         }
     }
 
     private async Task handleDelete(UserDTO user)
     {
-         var parameters = new DialogParameters
-        {
-            { nameof(UserDialog.User), user },
-            { nameof(UserDialog.isEditing), false }, 
-            { nameof(UserDialog.isDeleting), true } 
-        };
+        var parameters = new DialogParameters
+{
+{ nameof(UserDialog.User), user },
+{ nameof(UserDialog.isEditing), false },
+{ nameof(UserDialog.isDeleting), true }
+};
 
         var dialog = await DialogService.ShowAsync<UserDialog>("Delete", parameters);
         var result = await dialog.Result;

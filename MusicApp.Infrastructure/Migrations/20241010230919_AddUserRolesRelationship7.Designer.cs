@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MusicApp.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using MusicApp.Infrastructure.Data;
 namespace MusicApp.Infrastructure.Migrations
 {
     [DbContext(typeof(MusicDbContext))]
-    partial class MusicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241010230919_AddUserRolesRelationship7")]
+    partial class AddUserRolesRelationship7
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -345,6 +348,16 @@ namespace MusicApp.Infrastructure.Migrations
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<Guid?>("RoleId1")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("UserId1")
+                        .HasColumnType("char(36)");
+
+                    b.HasIndex("RoleId1");
+
+                    b.HasIndex("UserId1");
+
                     b.HasDiscriminator().HasValue("UserRoles");
                 });
 
@@ -437,16 +450,24 @@ namespace MusicApp.Infrastructure.Migrations
             modelBuilder.Entity("MusicApp.Domain.Entities.UserRoles", b =>
                 {
                     b.HasOne("MusicApp.Domain.Entities.Role", "Role")
-                        .WithMany("UserRoles")
+                        .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MusicApp.Domain.Entities.User", "User")
+                    b.HasOne("MusicApp.Domain.Entities.Role", null)
                         .WithMany("UserRoles")
+                        .HasForeignKey("RoleId1");
+
+                    b.HasOne("MusicApp.Domain.Entities.User", "User")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("MusicApp.Domain.Entities.User", null)
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("Role");
 

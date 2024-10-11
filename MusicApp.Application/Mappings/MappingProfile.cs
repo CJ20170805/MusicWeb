@@ -12,6 +12,8 @@ public class MappingProfile : Profile
     {
         CreateMap<User, UserDTO>().ReverseMap();
 
+        CreateMap<UserRoles, RoleDTO>().ReverseMap();
+
         CreateMap<Track, TrackDTO>()
              .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => (TimeSpan)src.Duration))  // Map Duration to TimeSpan
              .ReverseMap()

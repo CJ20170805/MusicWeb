@@ -77,6 +77,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 
 // Dependency Injection for repository services
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
@@ -105,7 +106,19 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
 .AddEntityFrameworkStores<MusicDbContext>()
 .AddDefaultTokenProviders();
 
+// Register the RoleInitializer
+builder.Services.AddTransient<RoleInitializer>();
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var roleInitializer = services.GetRequiredService<RoleInitializer>();
+
+    // Initialize roles 
+    await roleInitializer.InitializeRolesAsync();
+}
 
 // Configure the HTTP request pipeline for Blazor Server
 if (!app.Environment.IsDevelopment())

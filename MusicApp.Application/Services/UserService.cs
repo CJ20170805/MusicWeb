@@ -24,7 +24,18 @@ public class UserService : IUserService
         {
             throw new Exception("No users found");
         }
+
         return _mapper.Map<IEnumerable<UserDTO>>(users);
+        //  return users.Select(user => new UserDTO
+        //     {
+        //         Id = user.Id,
+        //         UserName = user.UserName,
+        //         Email = user.Email,
+        //         IsDeleted = user.IsDeleted,
+        //         CreatedAt = user.CreatedAt,
+        //         UpdatedAt = user.UpdatedAt,
+        //         UserRoles = user.UserRoles
+        //  }).ToList();
     }
 
     public async Task<bool> UpdateUserSAsync(UserDTO userDTO)
