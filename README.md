@@ -22,9 +22,10 @@
 
 #### Admin System
 - **Authentication and Authorization**: Secure login for admins to manage the system.
-- **User Management**: Create, update, and delete user accounts.
+- **User Management**: Create, update, and delete user accounts include role management.
 - **Track Management**: Add, update, and delete music tracks.
 - **Playlist Management**: Create playlists and add tracks.
+- **Notification**: Receive custom notificaiton on the home page.  
 
 #### Frontend
 - **Login and Authentication**: Users can log in to access the system.
