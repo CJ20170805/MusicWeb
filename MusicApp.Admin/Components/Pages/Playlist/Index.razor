@@ -1,4 +1,5 @@
 ﻿@page "/playlists"
+@attribute [Authorize(Policy = "AdminPolicy")]
 @inject IDialogService DialogService
 @inject IPlaylistService PlaylistService
 @inject ITrackService TrackService

@@ -1,4 +1,5 @@
 ﻿@page "/tracks"
+@attribute [Authorize(Policy = "AdminPolicy")]
 @inject ITrackService TrackService
 @inject IDialogService DialogService
 

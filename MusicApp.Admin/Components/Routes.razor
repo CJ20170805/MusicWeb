@@ -4,13 +4,32 @@
 
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        @if (IsAuthRoute(routeData))
+        @* @if (IsAuthRoute(routeData))
         {
             <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.AuthLayout)" />
         }
         else
         {
             <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        } *@
+        @if (IsAuthRoute(routeData))
+        {
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.AuthLayout)" />
+        }
+        else
+        {
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    @if (context?.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <p>You are not authorized to view this page.</p>
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
         }
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
@@ -27,11 +46,10 @@
         if (routeData.PageType == null)
             return false;
 
-        // Define your routes based on the page types
         var authPageTypes = new[]
         {
-            typeof(Login),          // Assuming you have a Login component
-            // typeof(Register),       // Assuming you have a Register component
+            typeof(Login),         
+            // typeof(Register),      
         };
 
         // Check if the current PageType is in the defined auth pages

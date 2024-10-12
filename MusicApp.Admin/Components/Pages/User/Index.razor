@@ -1,24 +1,12 @@
 ﻿@page "/users"
 @* @attribute [Authorize(Policy = "AdminPolicy")] *@
+@attribute [Authorize(Roles = "Admin")]
 @inject IUserService UserService
 @inject IDialogService DialogService
 @inject IUserRoleService UserRoleService
 
 <PageTitle>User</PageTitle>
 
-@* <AuthorizeView>
-    <Authorized>
-        <!-- This block will only render if the user is authorized -->
-        <MudTable Items="@users" Hover="true" SortLabel="Sort By">
-            <!-- Your table content goes here -->
-            <h1>Authorized</h1>
-        </MudTable>
-    </Authorized>
-    <NotAuthorized>
-        <!-- This block will render if the user is not authorized -->
-        <p>You are not authorized to view this page.</p>
-    </NotAuthorized>
-</AuthorizeView> *@
 
 <MudTable Items="@users" Hover="true" SortLabel="Sort By">
     <ToolBarContent>
