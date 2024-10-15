@@ -37,10 +37,10 @@ public class MusicDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .WithMany(t => t.PlaylistTracks)
             .HasForeignKey(pt => pt.TrackId);
 
-        modelBuilder.Entity<Notification>()
-            .HasOne(n => n.User)
-            .WithMany(u => u.Notifications)
-            .HasForeignKey(n => n.UserId);
+        // modelBuilder.Entity<Notification>()
+        //     .HasOne(n => n.User)
+        //     .WithMany(u => u.Notifications)
+        //     .HasForeignKey(n => n.UserId);
 
         
         

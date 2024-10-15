@@ -1,12 +1,14 @@
 ﻿@inherits LayoutComponentBase
 @using MusicApp.Admin.Services
 @using MusicApp.Domain.Entities
+@using Microsoft.AspNetCore.SignalR.Client;
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager NavigationManager
 @inject UserManager<User> UserManager
 @inject SignInManager<User> SignInManager
 @inject ThemeService ThemeService
 @inject INotificationService NotificationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="@ThemeService.IsDarkMode" />
 <MudPopoverProvider />
@@ -89,7 +91,9 @@
     private void ToggleOpen() => _open = !_open;
     private bool _drawerOpen = true;
     private MudTheme? _theme = null;
-    private IEnumerable<Notification>? notifications;
+    private IEnumerable<Notification> notifications = new List<Notification>();
+    private HubConnection? hubConnection;
+    private bool _isListening = false;
     private int unreadCount = 0;
 
     protected override void OnInitialized()
@@ -103,6 +107,7 @@
             };
 
         ThemeService.OnChange += async () => await InvokeAsync(StateHasChanged);
+
         Console.WriteLine("Initialing~~~~~~");
 
         _ = Task.Run(async () =>
@@ -110,7 +115,75 @@
             await Task.Delay(1000); // Delay before fetching notifications
             await GetNotificationAsnyc();
             await InvokeAsync(StateHasChanged); // Ensure UI is updated after fetching notifications
+            await ListenNotification();
         });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+    public async Task ListenNotification()
+    {
+        if (!_isListening)
+        {
+            Console.WriteLine("Strat ListenNoTi");
+
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+
+            if (user.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                Console.WriteLine("kkkkk" + user.Identity?.Name +  $"Admin? {user.IsInRole("Admin")}, User? {user.IsInRole("User")}, XXXL:{user.FindFirst(ClaimTypes.NameIdentifier)?.Value}");
+                _isListening = true;
+
+                try
+                {
+                    hubConnection = new HubConnectionBuilder()
+                    .WithUrl(NavigationManager.ToAbsoluteUri("/NotificationHub"), options =>
+                    {
+                        // Use cookies for authentication
+                        options.AccessTokenProvider = () => Task.FromResult<string?>(null); // no access token needed
+                    })
+                    .WithAutomaticReconnect()
+                    .Build();
+
+                    hubConnection.On<string>("ReceiveNotification", async (message) =>
+                    {
+                        Console.WriteLine("MSGGGG" + message);
+                        await GetNotificationAsnyc();
+                        @* await InvokeAsync(StateHasChanged); *@
+                        //unreadCount++;
+                    //StateHasChanged();
+                    });
+
+                    await hubConnection.StartAsync();
+
+                    // After starting the connection, you can retrieve the ConnectionId
+                    var connectionId = hubConnection.ConnectionId;
+                    Console.WriteLine($"Connection established with ID: {connectionId}");
+
+                    // Manage user groups based on roles
+                    @* if (user.IsInRole("Admin"))
+                    {
+                        await hubConnection.InvokeAsync("AddToGroup", connectionId, "Admins");
+                    }
+                    else if (user.IsInRole("User"))
+                    {
+                        await hubConnection.InvokeAsync("AddToGroup", connectionId, "Users");
+                    } *@
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine("HubErr" + err);
+                }
+            }
+        }
     }
 
     private async Task GetNotificationAsnyc()
@@ -125,22 +198,25 @@
             {
                 Console.WriteLine("Currrent User:" + user.Id);
                 // Fetch notifications for the current user
+                bool isAdmin = await UserManager.IsInRoleAsync(user, "Admin");
+
                 try
                 {
-                    notifications = await NotificationService.GetNotificationsByUserIdAsync(user.Id);
+                    notifications = await NotificationService.GetNotificationsByRoleAsync(user.Id, isAdmin);
                     foreach (var n in notifications)
                     {
-                        Console.WriteLine("no------>>" + n.Message);
+                        Console.WriteLine("notification------>>" + n.Message);
                     }
-                    unreadCount = notifications.Count();
-                    StateHasChanged();
+                    await InvokeAsync(() =>
+                    {
+                        unreadCount = notifications.Count();
+                        StateHasChanged();
+                    });
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error fetching notifications: {ex.Message}");
                 }
-
-                Console.WriteLine("no---22--->>" + unreadCount);
             }
             else
             {

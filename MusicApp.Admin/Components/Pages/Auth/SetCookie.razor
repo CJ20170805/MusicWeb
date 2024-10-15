@@ -41,32 +41,5 @@
             NavigationManager.NavigateTo("/Account/login?ErrMsg=LoginFailed", forceLoad: true);
             Logger.LogWarning("Login failed for user: {Username}", Username);
         }
-
-        // Cookie handling can be done after a successful login if needed
-        // The following is an example of how to set a cookie after checking for a token
-        @* var token = queryParams["token"];
-        if (!string.IsNullOrWhiteSpace(token))
-        {
-            var httpContext = HttpContextAccessor.HttpContext;
-            if (httpContext != null)
-            {
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true, // Prevents JavaScript from accessing the cookie
-                    Expires = DateTimeOffset.UtcNow.AddDays(1), // Optional expiration
-                    Secure = true, // Set to true if using HTTPS
-                };
-
-                // Set the cookie in the response
-                httpContext.Response.Cookies.Append("jwt", token, cookieOptions);
-            }
-
-            // Redirect to the main page or wherever needed
-            NavigationManager.NavigateTo("/");
-        }
-        else
-        {
-            NavigationManager.NavigateTo("/Account/login"); // Redirect back if no token
-        } *@
     }
 }

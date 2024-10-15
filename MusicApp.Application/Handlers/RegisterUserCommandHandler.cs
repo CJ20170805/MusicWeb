@@ -5,8 +5,7 @@ using MusicApp.Domain.Entities;
 using MusicApp.Application.Commands;
 using MusicApp.Application.Interfaces;
 using MusicApp.Application.Events;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace MusicApp.Application.Handlers;
 
@@ -23,6 +22,7 @@ public class RegisterUserCommandHandler: IRequestHandler<RegisterUserCommand, bo
         _mediator = mediator;
     }
 
+
     public async Task<bool> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
         var user = new User
@@ -32,12 +32,6 @@ public class RegisterUserCommandHandler: IRequestHandler<RegisterUserCommand, bo
         };
 
         Console.WriteLine("RegisterUserCommandHandler: " + user.UserName + " " + user.Email + request.Password);
-        // foreach (var role in user.UserRoles)
-        // {
-        //     Console.WriteLine("UserRoles: " + role.RoleId);
-        // }
-
-        // user.UserRoles.Clear();
 
         var result = await _userManager.CreateAsync(user, request.Password);
 
@@ -49,7 +43,8 @@ public class RegisterUserCommandHandler: IRequestHandler<RegisterUserCommand, bo
             // Publish user registered event
             var userRegisteredEvent = new UserRegisteredEvent(user.Id, user.Email);
             await _mediator.Publish(userRegisteredEvent, cancellationToken);
-            return true;
+
+           return true;
         }
 
         return false;

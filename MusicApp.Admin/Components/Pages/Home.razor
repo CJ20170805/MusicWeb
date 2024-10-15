@@ -1,23 +1,117 @@
 ﻿@page "/"
+@inject INotificationService NotificationService
 
 <PageTitle>Home</PageTitle>
 
-Welcome to your new app.
+<MudGrid>
+    <MudItem xs="12">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Notification Test</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="3">
+                        <MudText>To all admins</MudText>
+                    </MudItem>
+                    <MudItem xs="9">
 
-<MudCard>
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudText Typo="Typo.h6">The Story Book</MudText>
-        </CardHeaderContent>
-        <CardHeaderActions>
-            <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
-        </CardHeaderActions>
-    </MudCardHeader>
-    <MudCardContent>
-        <MudText>This day everything happened.</MudText>
-        <MudText Typo="Typo.body2">The quick, brown fox jumps over a lazy dog.</MudText>
-    </MudCardContent>
-    <MudCardActions>
-        <MudButton Variant="Variant.Text" Color="Color.Primary">Read More</MudButton>
-    </MudCardActions>
-</MudCard>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleSendToAdmins">Send Msg
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+
+                 <MudGrid Class="pt-2">
+                    <MudItem xs="3">
+                        <MudText>To all users</MudText>
+                    </MudItem>
+                    <MudItem xs="9">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleSendToUsers">Send Msg
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+
+                    <MudGrid Class="pt-2">
+                    <MudItem xs="3">
+                        <MudText>To a user</MudText>
+                    </MudItem>
+                    <MudItem xs="9">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleSendToAUser">Send Msg
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+
+                <MudGrid Class="pt-2">
+                    <MudItem xs="3">
+                        <MudText>Test</MudText>
+                    </MudItem>
+                    <MudItem xs="9">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleSendMessage">Send Msg
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+
+            </MudCardContent>
+            <MudCardActions>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code
+{
+    private async void HandleSendMessage()
+    {
+        Console.WriteLine("Triggered!!!!");
+        try
+        {
+            await NotificationService.TestNotification();
+        }
+        catch (Exception err)
+        {
+            Console.WriteLine("xeexxxx:" + err);
+        }
+    }
+    private async void HandleSendToAdmins()
+    {
+        Console.WriteLine("Triggered!!!!");
+        try
+        {
+            await NotificationService.TestSendToAllAdmins();
+        }
+        catch (Exception err)
+        {
+            Console.WriteLine("xeexxxx:" + err);
+        }
+    }
+    private async void HandleSendToUsers()
+    {
+        Console.WriteLine("Triggered!!!!");
+        try
+        {
+            await NotificationService.TestSendToAllUsers();
+        }
+        catch (Exception err)
+        {
+            Console.WriteLine("xeexxxx:" + err);
+        }
+    }
+
+    private async void  HandleSendToAUser()
+    {
+        Console.WriteLine("Triggered!!!!");
+        try
+        {
+            await NotificationService.TestSendToAUser(Guid.NewGuid());
+        }
+        catch (Exception err)
+        {
+            Console.WriteLine("xeexxxx:" + err);
+        }
+    }
+}

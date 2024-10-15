@@ -20,35 +20,39 @@ using MusicApp.Admin.Services;
 using MusicApp.Application.Commands;
 using MusicApp.Application.Handlers;
 using MediatR;
+using MusicApp.Application.Hubs;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials(); 
+        });
+});
+
+
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found."));
+
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme; 
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme; 
 })
-.AddJwtBearer(options =>
+.AddCookie(options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero // Optional: to avoid clock skew issues
-    };
-}).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-{
-    options.Cookie.Name = "jwt"; // Set the cookie name for authentication
     options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Secure cookies over HTTPS
-    options.LoginPath = "/Account/Login"; // Adjust login path
-    options.LogoutPath = "/Account/Logout"; // Adjust logout path
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
+    options.LoginPath = "/Account/Login"; 
+    options.LogoutPath = "/Account/Logout"; 
 });
 
 builder.Services.AddMudServices();
@@ -62,6 +66,7 @@ builder.Services.AddTransient<IValidator<LoginDTO>, LoginDTOValidator>();
 // AutoMapper setup
 builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
+builder.Services.AddSignalR();
 builder.Services.AddHttpContextAccessor();
 
 // Set up the HTTP client for API calls
@@ -102,6 +107,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 
+
 // MySQL Database setup
 var serverVersion = new MySqlServerVersion(new Version(8, 2, 0));
 builder.Services.AddDbContextFactory<MusicDbContext>(dbContextOptions => 
@@ -124,6 +130,7 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
 
 // Register the RoleInitializer
 builder.Services.AddTransient<RoleInitializer>();
+
 
 var app = builder.Build();
 
@@ -148,12 +155,17 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAntiforgery();
 
+
+
 // Enable authentication and authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
+
 // Map Razor Components (Blazor Server)
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapHub<NotificationHub>("/NotificationHub");
 
 app.Run();

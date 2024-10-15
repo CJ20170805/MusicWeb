@@ -53,16 +53,16 @@
 
                 }
 
-                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
-                        MultiSelection="true" SelectedValues="SelectedRoles" SelectedValuesChanged="OnSelectedValuesChanged"
-                        T="string" Label="Roles" AdornmentIcon="@Icons.Material.Filled.Search"
-                        AnchorOrigin="Origin.BottomCenter">
+                <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
+                    MultiSelection="true" SelectedValues="SelectedRoles" SelectedValuesChanged="OnSelectedValuesChanged"
+                    T="string" Label="Roles" AdornmentIcon="@Icons.Material.Filled.Search"
+                    AnchorOrigin="Origin.BottomCenter">
 
-                        @foreach (var role in RolesList)
-                        {
-                            <MudSelectItem T="string" Value="@role.Name">@role.Name</MudSelectItem>
-                        }
-                    </MudSelect>
+                    @foreach (var role in RolesList)
+                    {
+                        <MudSelectItem T="string" Value="@role.Name">@role.Name</MudSelectItem>
+                    }
+                </MudSelect>
             }
             else
             {
@@ -125,14 +125,14 @@
         foreach (var userrole in userRoles)
         {
 
-             SelectedRoles.Add(userrole);
+            SelectedRoles.Add(userrole);
             @* foreach (var role in RolesList)
-            {
-                if (userrole == role.Name)
-                {
-                    SelectedRoles.Add(role.Name);
-                }
-            } *@
+{
+if (userrole == role.Name)
+{
+SelectedRoles.Add(role.Name);
+}
+} *@
         }
 
     }
@@ -164,41 +164,48 @@
             {
 
 
-                @* var registerDTO = new RegisterDTO
-                {
-                UserName = RegisterDTO.UserName,
-                Email = RegisterDTO.Email,
-                Password = RegisterDTO.Password,
-                ConfirmPassword = RegisterDTO.ConfirmPassword
-                };
-
-                var result = await UserService.RegisterUserAsync(registerDTO);
-
-                if (result)
-                {
-                MudDialog?.Close(DialogResult.Ok(User.Id));
-                }
-                else
-                {
-                Console.WriteLine("User registration failed.");
-                } *@
+                var registerDTO = new RegisterDTO
+                    {
+                        UserName = RegisterDTO.UserName,
+                        Email = RegisterDTO.Email,
+                        Password = RegisterDTO.Password,
+                        ConfirmPassword = RegisterDTO.ConfirmPassword
+                    };
 
                 try
                 {
+                    var result = await UserService.RegisterUserAsync(registerDTO);
 
-                    var ruser = await UserService.CreateUserSAsync(RegisterDTO, RegisterDTO.Password); // Create
-                    if(ruser != null)
+                    if (result)
                     {
-                        Console.WriteLine("RUSER" + ruser.Id);
-                        await UserRoleService.AssignRoleToUserAsync(ruser.Id, SelectedRoles);
-                        MudDialog?.Close(DialogResult.Ok(ruser.Id));
+                        MudDialog?.Close(DialogResult.Ok(User.Id));
                     }
-
+                    else
+                    {
+                        Console.WriteLine("User registration failed.");
+                    }
                 }
                 catch (Exception err)
                 {
-                    Console.WriteLine("Error during creation: " + err);
+                    Console.WriteLine("Error during creation2: " + err);
                 }
+
+                @* try
+{
+
+var ruser = await UserService.CreateUserSAsync(RegisterDTO, RegisterDTO.Password); // Create
+if(ruser != null)
+{
+Console.WriteLine("RUSER" + ruser.Id);
+await UserRoleService.AssignRoleToUserAsync(ruser.Id, SelectedRoles);
+MudDialog?.Close(DialogResult.Ok(ruser.Id));
+}
+
+}
+catch (Exception err)
+{
+Console.WriteLine("Error during creation: " + err);
+} *@
 
             }
         }
@@ -207,9 +214,9 @@
     private void OnSelectedValuesChanged(IEnumerable<string> selectedValues) // Accept IEnumerable<string>
     {
         @* foreach (var sv in selectedValues)
-        {
-        Console.WriteLine("selectedValues:" + sv);
-        } *@
+{
+Console.WriteLine("selectedValues:" + sv);
+} *@
 
         // Update selectedTrackIds with the newly selected values
         SelectedRoles = selectedValues.ToList();

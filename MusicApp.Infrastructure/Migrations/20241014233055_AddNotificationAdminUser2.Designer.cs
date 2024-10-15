@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MusicApp.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using MusicApp.Infrastructure.Data;
 namespace MusicApp.Infrastructure.Migrations
 {
     [DbContext(typeof(MusicDbContext))]
-    partial class MusicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241014233055_AddNotificationAdminUser2")]
+    partial class AddNotificationAdminUser2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -177,6 +180,8 @@ namespace MusicApp.Infrastructure.Migrations
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Notifications");
                 });
@@ -368,6 +373,15 @@ namespace MusicApp.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MusicApp.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("MusicApp.Domain.Entities.User", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MusicApp.Domain.Entities.Playlist", b =>
                 {
                     b.HasOne("MusicApp.Domain.Entities.User", "User")
@@ -410,6 +424,8 @@ namespace MusicApp.Infrastructure.Migrations
 
             modelBuilder.Entity("MusicApp.Domain.Entities.User", b =>
                 {
+                    b.Navigation("Notifications");
+
                     b.Navigation("Playlists");
                 });
 #pragma warning restore 612, 618

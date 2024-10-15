@@ -14,6 +14,7 @@ using System.Security.Cryptography;
 using MusicApp.Application.Mappings;
 using MusicApp.Application.Handlers;
 using MediatR;
+using MusicApp.Application.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,9 @@ builder.Services.AddCors(options =>
                           .AllowAnyHeader()
                           .AllowAnyMethod());
 });
+
+
+builder.Services.AddSignalR();
 
 
 // Add services to the container.
@@ -115,6 +119,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();  
 app.UseAuthorization();
+
+app.MapHub<NotificationHub>("/NotificationHub");
 
 app.MapGet("/GenerateRandomKey", () =>
 {
