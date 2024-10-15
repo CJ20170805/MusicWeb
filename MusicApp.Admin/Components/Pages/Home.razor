@@ -59,16 +59,6 @@
                     </MudItem>
                 </MudGrid>
 
-                <MudGrid Class="pt-2">
-                    <MudItem xs="3">
-                        <MudText>Test</MudText>
-                    </MudItem>
-                    <MudItem xs="9">
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleSendMessage">Send Msg
-                        </MudButton>
-                    </MudItem>
-                </MudGrid>
-
             </MudCardContent>
             <MudCardActions>
             </MudCardActions>
@@ -107,18 +97,6 @@
     private void OnSelectedValuesChanged(IEnumerable<string> selectedValues)
     {
         SelectedUsers = selectedValues.ToList();
-    }
-    private async void HandleSendMessage()
-    {
-        Console.WriteLine("Triggered!!!!");
-        try
-        {
-            await NotificationService.TestNotification();
-        }
-        catch (Exception err)
-        {
-            Console.WriteLine("xeexxxx:" + err);
-        }
     }
     private async void HandleSendToAdmins()
     {

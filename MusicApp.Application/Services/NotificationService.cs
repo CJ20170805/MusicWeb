@@ -41,19 +41,7 @@ public class NotificationService: INotificationService
             return await _notificationRepository.GetNotificationCountByUserIdAsync(userId);
         }
 
-        // Test method
-        public async Task<bool> TestNotification()
-        {   
-            // string formattedDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            // Console.WriteLine($"Test Message MMMM: ({formattedDate})");
-            // await _hubContext.Clients.All.SendAsync("ReceiveNotification", $"Test Message: ({formattedDate})");
-            // return true;  
-
-            // Publish user registered event
-            var userRegisteredEvent = new UserRegisteredEvent(Guid.Parse("08dcea3b-6873-4393-8049-ac90017d7c56"), "Hahah@haha.com");
-            await _mediator.Publish(userRegisteredEvent);  
-            return true;
-        }
+        // Test methods
         public async Task<bool> TestSendToAllAdmins()
         {
             string formattedDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
