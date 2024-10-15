@@ -60,7 +60,7 @@ public class NotificationService: INotificationService
             Console.WriteLine($"Test Message MMMM: ({formattedDate})");
             string msg = $"Test Message(All admins): ({formattedDate})";
             await SaveNotificationToDB(msg, true, false);
-            await _hubContext.Clients.Group("Admins").SendAsync("ReceiveNotification", msg);
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg);
             return true;  
 
         }
@@ -70,16 +70,19 @@ public class NotificationService: INotificationService
             Console.WriteLine($"Test Message MMMM: ({formattedDate})");
             string msg = $"Test Message(All users): ({formattedDate})";
             await SaveNotificationToDB(msg, false, true);
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification", msg);
+            await _hubContext.Clients.Group("Users").SendAsync("ReceiveNotification", msg);
             return true;  
         }
-        public async Task<bool> TestSendToAUser(Guid userId)
+        public async Task<bool> TestSendToAUser(IEnumerable<Guid> userIds)
         {
             string formattedDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             Console.WriteLine($"Test Message MMMM: ({formattedDate})");
             string msg = $"Test Message(A user): ({formattedDate})";
-            await SaveNotificationToDB(msg, false, false, userId);
-            await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", msg);
+            foreach (var userId in userIds)
+            {
+                await SaveNotificationToDB(msg, false, false, userId);
+                await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", msg);
+            }
             return true;  
         }
         private async Task<bool> SaveNotificationToDB(string message, bool isForAdmin, bool isForUser, Guid? userId=null)

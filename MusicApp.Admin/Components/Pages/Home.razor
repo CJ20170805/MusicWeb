@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject INotificationService NotificationService
+@inject IUserService UserService
 
 <PageTitle>Home</PageTitle>
 
@@ -26,7 +27,7 @@
                     </MudItem>
                 </MudGrid>
 
-                 <MudGrid Class="pt-2">
+                <MudGrid Class="pt-2">
                     <MudItem xs="3">
                         <MudText>To all users</MudText>
                     </MudItem>
@@ -36,11 +37,23 @@
                     </MudItem>
                 </MudGrid>
 
-                    <MudGrid Class="pt-2">
+                <MudGrid Class="pt-2">
                     <MudItem xs="3">
-                        <MudText>To a user</MudText>
+                        <MudText>To specific user</MudText>
                     </MudItem>
-                    <MudItem xs="9">
+                    <MudItem xs="4">
+                        <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
+                            MultiSelection="true" SelectedValues="SelectedUsers"
+                            SelectedValuesChanged="OnSelectedValuesChanged" T="string"
+                            AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter">
+
+                            @foreach (var user in users)
+                            {
+                                <MudSelectItem T="string" Value="@user.Id.ToString()">@user.UserName</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="2">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleSendToAUser">Send Msg
                         </MudButton>
                     </MudItem>
@@ -65,6 +78,36 @@
 
 @code
 {
+    private IEnumerable<UserDTO> users = new List<UserDTO>();
+    private IEnumerable<Guid> selectedUserIds = new List<Guid>();
+    private List<string> SelectedUsers { get; set; } = new List<string>();
+
+     protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        users = await UserService.GetUsersAllAsync();
+    }
+    private string GetMultiSelectionText(List<string> selectedValues)
+    {
+        var selectedSet = new HashSet<string>(selectedValues);
+
+        selectedUserIds = selectedValues.Select(s => Guid.Parse(s)).ToList();
+
+        var nameList = users
+            .Where(user => selectedSet.Contains(user.Id.ToString()))
+            .Select(u => u.UserName)
+            .ToList();       
+
+        return string.Join(", ", nameList);
+    }
+    private void OnSelectedValuesChanged(IEnumerable<string> selectedValues)
+    {
+        SelectedUsers = selectedValues.ToList();
+    }
     private async void HandleSendMessage()
     {
         Console.WriteLine("Triggered!!!!");
@@ -102,12 +145,12 @@
         }
     }
 
-    private async void  HandleSendToAUser()
+    private async void HandleSendToAUser()
     {
         Console.WriteLine("Triggered!!!!");
         try
         {
-            await NotificationService.TestSendToAUser(Guid.NewGuid());
+            await NotificationService.TestSendToAUser(selectedUserIds);
         }
         catch (Exception err)
         {

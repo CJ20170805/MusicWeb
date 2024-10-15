@@ -12,5 +12,5 @@ public interface INotificationService
     Task<bool> TestNotification();
     Task<bool> TestSendToAllAdmins();
     Task<bool> TestSendToAllUsers();
-    Task<bool> TestSendToAUser(Guid userId);
+    Task<bool> TestSendToAUser(IEnumerable<Guid> userIds);
 }

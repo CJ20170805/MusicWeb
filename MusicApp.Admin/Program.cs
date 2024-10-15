@@ -29,15 +29,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
+    options.AddPolicy("AllowSpecificOrigin",
         builder =>
         {
-            builder.AllowAnyOrigin()
+            builder.WithOrigins("http://localhost:5279")
                    .AllowAnyMethod()
                    .AllowAnyHeader()
                    .AllowCredentials(); 
         });
 });
+
+builder.Services.AddAntiforgery(options => options.SuppressXFrameOptionsHeader = true);
+
 
 
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found."));
@@ -49,6 +52,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie(options =>
 {
+    options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
     options.LoginPath = "/Account/Login"; 
@@ -153,6 +157,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("AllowSpecificOrigin");
 app.UseAntiforgery();
 
 
@@ -161,11 +166,12 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHub<NotificationHub>("/NotificationHub");
+
 
 // Map Razor Components (Blazor Server)
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapHub<NotificationHub>("/NotificationHub");
 
 app.Run();

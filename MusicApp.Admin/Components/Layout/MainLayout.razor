@@ -139,7 +139,6 @@
 
             if (user.Identity is not null && user.Identity.IsAuthenticated)
             {
-                Console.WriteLine("kkkkk" + user.Identity?.Name +  $"Admin? {user.IsInRole("Admin")}, User? {user.IsInRole("User")}, XXXL:{user.FindFirst(ClaimTypes.NameIdentifier)?.Value}");
                 _isListening = true;
 
                 try
@@ -147,8 +146,25 @@
                     hubConnection = new HubConnectionBuilder()
                     .WithUrl(NavigationManager.ToAbsoluteUri("/NotificationHub"), options =>
                     {
-                        // Use cookies for authentication
-                        options.AccessTokenProvider = () => Task.FromResult<string?>(null); // no access token needed
+                        var httpContext = HttpContextAccessor.HttpContext;
+                        if (httpContext != null)
+                        {
+                            var container = new System.Net.CookieContainer();
+                            foreach (var item in httpContext.Request.Cookies)
+                            {
+                                container.Add(new System.Net.Cookie(item.Key, item.Value)
+                                {
+                                    Domain = httpContext.Request.Host.Host,
+                                    HttpOnly = true
+                                });
+                            }
+                            options.Cookies = container;
+                        }
+                        else
+                        {
+                            Console.WriteLine("HttpContext is null.");
+                        }
+
                     })
                     .WithAutomaticReconnect()
                     .Build();
@@ -157,9 +173,6 @@
                     {
                         Console.WriteLine("MSGGGG" + message);
                         await GetNotificationAsnyc();
-                        @* await InvokeAsync(StateHasChanged); *@
-                        //unreadCount++;
-                    //StateHasChanged();
                     });
 
                     await hubConnection.StartAsync();
@@ -167,16 +180,6 @@
                     // After starting the connection, you can retrieve the ConnectionId
                     var connectionId = hubConnection.ConnectionId;
                     Console.WriteLine($"Connection established with ID: {connectionId}");
-
-                    // Manage user groups based on roles
-                    @* if (user.IsInRole("Admin"))
-                    {
-                        await hubConnection.InvokeAsync("AddToGroup", connectionId, "Admins");
-                    }
-                    else if (user.IsInRole("User"))
-                    {
-                        await hubConnection.InvokeAsync("AddToGroup", connectionId, "Users");
-                    } *@
                 }
                 catch (Exception err)
                 {
