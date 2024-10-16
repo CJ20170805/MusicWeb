@@ -25,7 +25,7 @@
 - **User Management**: Create, update, and delete user accounts include role management.
 - **Track Management**: Add, update, and delete music tracks.
 - **Playlist Management**: Create playlists and add tracks.
-- **Notification**: Receive custom notificaiton on the home page.  
+- **Notification**: Send custom notificaiton to all admins, all users, or specific user.  
 
 #### Frontend
 - **Login and Authentication**: Users can log in to access the system.
