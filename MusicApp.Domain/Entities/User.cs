@@ -10,18 +10,15 @@ public class User: IdentityUser<Guid>
     public bool IsDeleted { get; private set; }
 
     public virtual ICollection<Playlist> Playlists { get; private set; } 
-    
-    // public virtual ICollection<Notification> Notifications { get; private set; }
-    
-    //public virtual ICollection<UserRoles> UserRoles { get; private set; }
+    public virtual ICollection<UserNotificationRead> UserNotificationReads { get; private set; }
+
     public User()
     {
-        // Initialize properties
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
         IsDeleted = false;
         Playlists = new List<Playlist>();
-        //Notifications = new List<Notification>();
+        UserNotificationReads = new List<UserNotificationRead>();
     }
 
     public void SoftDelete()

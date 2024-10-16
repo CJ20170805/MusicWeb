@@ -5,7 +5,8 @@ namespace MusicApp.Application.Interfaces;
 
 public interface INotificationService
 {
-    Task AddNotificationAsync(Notification notification);
+    Task AddNotificationAsync(string message, IEnumerable<Guid> userIds);
+    Task MarkNotificationAsReadAsync(Guid userId, List<string> notificationIds);
     Task<IEnumerable<Notification>> GetNotificationsByUserIdAsync(Guid userId);
     Task<IEnumerable<Notification>> GetNotificationsByRoleAsync(Guid userId, bool isAdmin);
     Task<int> GetUnreadNotificationCountAsync(Guid userId);

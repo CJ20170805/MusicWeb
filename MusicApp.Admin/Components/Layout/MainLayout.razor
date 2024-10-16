@@ -34,7 +34,8 @@
                         </MudPaper>
                         <MudPaper Class="pa-2 d-flex align-center justify-end mud-width-full">
                             <MudButton StartIcon="@Icons.Material.Outlined.DoneAll" Variant="Variant.Text"
-                                Color="Color.Primary" Size="Size.Small">Mark as read</MudButton>
+                                Color="Color.Primary" Size="Size.Small" OnClick="HandleMarkAsRead">Mark as read
+                            </MudButton>
                         </MudPaper>
                     </MudPaper>
                     <MudDivider />
@@ -95,6 +96,7 @@
     private HubConnection? hubConnection;
     private bool _isListening = false;
     private int unreadCount = 0;
+    private Guid currentUserId;
 
     protected override void OnInitialized()
     {
@@ -153,10 +155,10 @@
                             foreach (var item in httpContext.Request.Cookies)
                             {
                                 container.Add(new System.Net.Cookie(item.Key, item.Value)
-                                {
-                                    Domain = httpContext.Request.Host.Host,
-                                    HttpOnly = true
-                                });
+                                    {
+                                        Domain = httpContext.Request.Host.Host,
+                                        HttpOnly = true
+                                    });
                             }
                             options.Cookies = container;
                         }
@@ -200,12 +202,13 @@
             if (user != null)
             {
                 Console.WriteLine("Currrent User:" + user.Id);
+                 currentUserId = user.Id;
                 // Fetch notifications for the current user
                 bool isAdmin = await UserManager.IsInRoleAsync(user, "Admin");
 
                 try
                 {
-                    notifications = await NotificationService.GetNotificationsByRoleAsync(user.Id, isAdmin);
+                    notifications = await NotificationService.GetNotificationsByUserIdAsync(user.Id);
                     foreach (var n in notifications)
                     {
                         Console.WriteLine("notification------>>" + n.Message);
@@ -228,6 +231,26 @@
         }
     }
 
+    private async Task HandleMarkAsRead()
+    {
+        var unreadList = notifications
+                            .Select(n => n.Id.ToString())
+                            .ToList();
+        if (unreadList.Any())
+        {
+            try
+            {
+                await NotificationService.MarkNotificationAsReadAsync(currentUserId, unreadList);
+
+                // Refresh the notifications to reflect changes
+                await GetNotificationAsnyc();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error marking notifications as read: {ex.Message}");
+            }
+        }
+    }
     private void ToggleDarkMode() => ThemeService.ToggleDarkMode();
 
     private void HandleLogout()

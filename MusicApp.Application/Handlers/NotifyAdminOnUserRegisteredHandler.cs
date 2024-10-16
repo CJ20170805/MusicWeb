@@ -23,16 +23,15 @@ public class NotifyAdminOnUserRegisteredHandler: INotificationHandler<UserRegist
     public async Task Handle(UserRegisteredEvent notification, CancellationToken cancellationToken)
     {
         // Create a notification object
-        var newNotification = new Notification
-        (
-            $"New user registered: {notification.UserEmail}",
-            true,
-            false,
-            null
-        );
+        // var newNotification = new Notification
+        // (
+        //     $"New user registered: {notification.UserEmail}",
+        //     notification.UserId
+        // );
+        var message = $"New user registered: ({notification.UserEmail})";
 
         // Add the notification to the repository
-        await _notificationRepository.AddNotificationAsync(newNotification);
+        await _notificationRepository.AddNotificationAsync(message, new List<Guid>{notification.UserId});
 
         // Notify admin users via SignalR
         await _hubContext.Clients.All.SendAsync("ReceiveNotification", $"New user registered: {notification.UserId} ({notification.UserEmail})");

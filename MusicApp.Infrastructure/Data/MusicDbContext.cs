@@ -17,6 +17,7 @@ public class MusicDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<Track> Tracks { get; set; }
     public DbSet<PlaylistTrack> PlaylistTracks { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<UserNotificationRead> UserNotificationReads { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +25,8 @@ public class MusicDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 
         // modelBuilder.ApplyConfigurationsFromAssembly(typeof(MusicDbContext).Assembly);
 
+
+        //Configure PlaylistTrack many-to-many relationship
         modelBuilder.Entity<PlaylistTrack>()
             .HasKey(pt => new { pt.PlaylistId, pt.TrackId });
 
@@ -37,12 +40,22 @@ public class MusicDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .WithMany(t => t.PlaylistTracks)
             .HasForeignKey(pt => pt.TrackId);
 
-        // modelBuilder.Entity<Notification>()
-        //     .HasOne(n => n.User)
-        //     .WithMany(u => u.Notifications)
-        //     .HasForeignKey(n => n.UserId);
+       
 
+       // Configure UserNotificationRead relationship
+        modelBuilder.Entity<UserNotificationRead>()
+            .HasKey(unr => new { unr.UserId, unr.NotificationId });
+
+        modelBuilder.Entity<UserNotificationRead>()
+            .HasOne(unr => unr.User)
+            .WithMany(u => u.UserNotificationReads)
+            .HasForeignKey(unr => unr.UserId);
         
+        modelBuilder.Entity<UserNotificationRead>()
+            .HasOne(unr => unr.Notification)
+            .WithMany(n => n.UserNotificationReads)
+            .HasForeignKey(unr => unr.NotificationId)
+            .OnDelete(DeleteBehavior.Cascade);
         
 
     }
