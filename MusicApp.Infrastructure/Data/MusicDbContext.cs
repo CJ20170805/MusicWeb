@@ -18,6 +18,7 @@ public class MusicDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<PlaylistTrack> PlaylistTracks { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<UserNotificationRead> UserNotificationReads { get; set; }
+    public DbSet<FileUpload> FileUploads { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -56,6 +57,28 @@ public class MusicDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .WithMany(n => n.UserNotificationReads)
             .HasForeignKey(unr => unr.NotificationId)
             .OnDelete(DeleteBehavior.Cascade);
+
+
+        // Track - CoverImage relationship
+        modelBuilder.Entity<Track>()
+            .HasOne(t => t.CoverImage)
+            .WithMany()
+            .HasForeignKey(t => t.CoverImageId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Track - AudioFile relationship
+        modelBuilder.Entity<Track>()
+            .HasOne(t => t.AudioFile)
+            .WithMany()
+            .HasForeignKey(t => t.AudioFileId)
+            .OnDelete(DeleteBehavior.SetNull); 
+
+        // Configure UploadedFile entity
+        modelBuilder.Entity<FileUpload>().HasKey(f => f.Id);
+        modelBuilder.Entity<FileUpload>().Property(f => f.FileName).IsRequired();
+        modelBuilder.Entity<FileUpload>().Property(f => f.FilePath).IsRequired();
+        modelBuilder.Entity<FileUpload>().Property(f => f.FileSize).IsRequired();
+        modelBuilder.Entity<FileUpload>().Property(f => f.Type).IsRequired();
         
 
     }

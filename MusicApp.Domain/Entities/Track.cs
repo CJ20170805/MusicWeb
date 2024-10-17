@@ -9,6 +9,14 @@ public class Track
     public string Artist { get; private set; }
     public TimeSpan Duration { get; private set; }
 
+    // Foreign key to the cover image file
+    public Guid? CoverImageId { get; private set; }
+    public FileUpload? CoverImage { get; private set; }
+
+    // Foreign key to the audio file
+    public Guid? AudioFileId { get; private set; }
+    public FileUpload? AudioFile { get; private set; }
+
     public ICollection<PlaylistTrack> PlaylistTracks { get; private set; }
 
     public Track(string title, string artist, TimeSpan duration)
@@ -35,6 +43,18 @@ public class Track
         Title = title;
         Artist = artist;
         Duration = duration;
+    }
+
+    public void SetCoverImage(FileUpload coverImage)
+    {
+        CoverImage = coverImage;
+        CoverImageId = coverImage.Id;
+    }
+
+    public void SetAudioFile(FileUpload audioFile)
+    {
+        AudioFile = audioFile;
+        AudioFileId = audioFile.Id;
     }
 
 }
