@@ -1,4 +1,5 @@
 ﻿@inject ITrackService TrackService
+@inject IFileUploadService FileUploadService
 
 <MudDialog>
     <TitleContent>
@@ -23,6 +24,30 @@
             <MudTextField @bind-Value="@Track.Title" Label="Title" ReadOnly="false"/>
             <MudTextField @bind-Value="@Track.Artist" Label="Artist" ReadOnly="false"/>
             <MudTextField @bind-Value="@formattedDuration" Label="Duration" ReadOnly="false"/>
+            @if(Track.CoverImage != null)
+            {
+                <MudImage Src="@Track.CoverImage.FilePath" Width="332" Height="250" Alt="Swedish Farm House" Elevation="25" Class="rounded-lg ma-4"/>
+                <MudTextField @bind-Value="@Track.CoverImage.FileName" Label="CoverImageId" ReadOnly="false"/>
+            }
+         
+         <MudFileUpload T="IBrowserFile" OnFilesChanged="UploadFiles">
+    <ActivatorContent>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary">
+            Cover Image File
+        </MudButton>
+    </ActivatorContent>
+    <SelectedTemplate>
+        @if (file != null)
+        {
+            <MudText>@file.Name</MudText>
+        }
+        else
+        {
+            <MudText>No File</MudText>
+        }
+    </SelectedTemplate>
+</MudFileUpload>
         }
         else
         {
@@ -62,10 +87,26 @@
 
     [Parameter]
     public bool isDeleting { get; set; } 
+    private IBrowserFile? file;
 
+    private void UploadFiles(InputFileChangeEventArgs args)
+    {
+        file = args.File;
+    }
     private void Cancel() => MudDialog?.Cancel();
     private async Task Save()
     {
+        if(file != null)
+        {
+                //TODO upload the files to the server
+                var fileStream = file.OpenReadStream();
+                string timeStamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+                string fileName = $"{Path.GetFileNameWithoutExtension(file.Name)}_{timeStamp}{Path.GetExtension(file.Name)}";
+
+                Guid fileId = await FileUploadService.UploadFileAsync(fileStream, fileName, FileType.Cover);
+                Track.CoverImageId = fileId;
+                Console.WriteLine("FileIDDDDDD:" + fileId);
+        }
         if (isEditing)
         {
             await TrackService.UpdateTrackAsync(Track); // Update 

@@ -27,6 +27,14 @@ namespace MusicApp.WebAPI.Controllers
             return Ok(track);
         }
 
+        //GetTracksAllAsync
+        [HttpGet("All")]
+        public async Task<IActionResult> GetTracksAll()
+        {
+            var tracks = await _trackService.GetTracksAllAsync();
+            return Ok(tracks);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateTrack([FromBody] TrackDTO trackDTO)
         {

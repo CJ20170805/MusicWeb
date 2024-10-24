@@ -23,7 +23,11 @@ namespace MusicApp.Infrastructure.Repositories
 
         public async Task<Track> GetTrackByIdAsync(Guid trackId)
         {
-            var track = await _context.Tracks.FindAsync(trackId);
+            var track = await _context.Tracks
+             .Include(t => t.AudioFile)
+                .Include(t => t.CoverImage)
+                .FirstOrDefaultAsync(t => t.Id == trackId);
+
             if(track == null)
             {
                 throw new Exception("Track not found");
@@ -34,6 +38,8 @@ namespace MusicApp.Infrastructure.Repositories
         public async Task<IEnumerable<Track>> GetAllTracksAsync()
         {
             var tracks =  await _context.Tracks
+                .Include(t => t.AudioFile)
+                .Include(t => t.CoverImage)
                 .ToListAsync();
                 
             if(tracks == null)

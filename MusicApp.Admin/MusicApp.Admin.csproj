@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Folder Include="Components/Pages/User/" />
+    <Folder Include="wwwroot/storage/tracks/" />
   </ItemGroup>
 
   <ItemGroup>

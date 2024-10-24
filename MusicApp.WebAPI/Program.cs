@@ -56,6 +56,10 @@ builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 builder.Services.AddScoped<ITrackRepository, TrackRepository>();
 
+// DI for File service and repository
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IFileUploadRepository, FileUploadRepository>();
+
 // MySQL Database setup
 var serverVersion = new MySqlServerVersion(new Version(8, 2, 0));
 builder.Services.AddDbContextFactory<MusicDbContext>(

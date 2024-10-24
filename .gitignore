@@ -13,6 +13,9 @@
 *.vs
 .vscode/
 
+#Ignore local storage folder
+storage/
+
 # Ignore logs
 *.log
 

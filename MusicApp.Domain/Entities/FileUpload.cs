@@ -5,11 +5,11 @@ namespace MusicApp.Domain.Entities;
 public class FileUpload
 {
     public Guid Id { get; private set; }
-    public string? FileName { get; private set; }  
-    public string? FilePath { get; private set; }
-    public long FileSize { get; private set; }
+    public string? FileName { get;  set; }  
+    public string? FilePath { get;  set; }
+    public long FileSize { get;  set; }
     public DateTime UploadDate { get; private set; }
-    public FileType Type { get; private set; }
+    public FileType Type { get;  set; }
 
     public  FileUpload(string fileName, string filePath, long fileSize, FileType type)
     {
